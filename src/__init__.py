@@ -12,14 +12,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "AddonName",
-    "author" : "AuthorName",
-    "description" : "",
+    "name" : "Import: Omniscient(.omni)",
+    "author" : "Stellaxis OÜ",
+    "description" : "Import data recorded by the Omniscient iOS application.",
     "blender" : (2, 80, 0),
     "version" : (0, 0, 1),
-    "location" : "",
+    "location" : "File > Import > Omniscient (.omni)",
     "warning" : "",
-    "category" : "Generic"
+    "category" : "Import-Export"
 }
 
 from . import auto_load
