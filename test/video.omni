@@ -1,0 +1,11 @@
+{
+    "version": "0.0.1",
+    "blender": {
+        "minimum_plugin_version" : "0.0.1"
+    },
+    "data": {
+        "video_relative_path": "./video.mov",
+        "camera_relative_path": "./camera.abc",
+        "geo_relative_path": ["./geometry_1.obj", "./geometry_2.obj"]
+    }
+}
