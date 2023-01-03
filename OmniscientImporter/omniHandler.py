@@ -2,6 +2,7 @@ import bpy
 import json
 import os
 from . import bl_info
+from .ui.info_popups import showTextPopup
 
 isVideoFileMissing = False
 isCameraFileMissing = False
@@ -75,5 +76,7 @@ def loadOmni(self, omni_file):
         cam.data.show_background_images = True
         bg = cam.data.background_images.new()
         bg.image = img
+
+        showTextPopup("Succes !")
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT')
