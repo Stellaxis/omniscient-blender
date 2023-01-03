@@ -1,4 +1,5 @@
 import bpy
+from ..omniHandler import loadProcessedOmni
 
 class missingFileResolver(bpy.types.Operator):
     """Open the Missing File box"""
@@ -21,6 +22,7 @@ class missingFileResolver(bpy.types.Operator):
         row.prop(self, "GeoPath", text="Geometry")
 
     def execute(self, context):
+        loadProcessedOmni(self, self.VideoPath, self.CameraPath, self.GeoPath)
         return {'FINISHED'}
     
     def invoke(self, context, event):
