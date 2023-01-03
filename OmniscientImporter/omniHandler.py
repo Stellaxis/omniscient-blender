@@ -62,21 +62,24 @@ def loadOmni(self, omni_file):
         # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
 
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
-        # Import the .abc file into the blender scene
-        bpy.ops.wm.alembic_import(filepath=camera_filepath)
-
-        # Import the .obj file into the blender scene
-        bpy.ops.import_scene.obj(filepath=geo_filepath)
-
-        # Import the .mov file into the blender scene
-        # -- RENDER --
-        cam = bpy.context.scene.objects['cameras']
-        bpy.context.scene.render.film_transparent = True
-        img = bpy.data.images.load(video_filepath)
-        cam.data.show_background_images = True
-        bg = cam.data.background_images.new()
-        bg.image = img
-
-        showTextPopup("Succes !")
+        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath)
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT')
+
+def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath):
+    # Import the .abc file into the blender scene
+    bpy.ops.wm.alembic_import(filepath=camera_filepath)
+
+    # Import the .obj file into the blender scene
+    bpy.ops.import_scene.obj(filepath=geo_filepath)
+
+    # Import the .mov file into the blender scene
+    # -- RENDER --
+    cam = bpy.context.scene.objects['cameras']
+    bpy.context.scene.render.film_transparent = True
+    img = bpy.data.images.load(video_filepath)
+    cam.data.show_background_images = True
+    bg = cam.data.background_images.new()
+    bg.image = img
+
+    showTextPopup("Succes !")
