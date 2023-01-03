@@ -5,6 +5,9 @@ class missingFileResolver(bpy.types.Operator):
     bl_label = "Missing File"
     bl_idname = "wm.missing_file_resolver"
     
+    isVideoFileMissing: bpy.props.BoolProperty(default=True)
+    isCameraFileMissing: bpy.props.BoolProperty(default=True)
+    isGeoFileMissing: bpy.props.BoolProperty(default=True)
     CameraPath: bpy.props.StringProperty(default="\wrong\path")
     VideoPath: bpy.props.StringProperty(default="\wrong\path")
     GeoPath: bpy.props.StringProperty(default="\wrong\path")
