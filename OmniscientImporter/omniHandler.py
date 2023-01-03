@@ -4,21 +4,13 @@ import os
 from . import bl_info
 from .ui.info_popups import showTextPopup
 
-isVideoFileMissing = False
-isCameraFileMissing = False
-isGeoFileMissing = False
-video_filepath = ""
-camera_filepath = ""
-geo_filepath = ""
-
 def loadOmni(self, omni_file):
-    # Telling the function to consider as global
-    global isVideoFileMissing
-    global isCameraFileMissing
-    global isGeoFileMissing
-    global video_filepath
-    global camera_filepath
-    global geo_filepath
+    isVideoFileMissing = False
+    isCameraFileMissing = False
+    isGeoFileMissing = False
+    video_filepath = ""
+    camera_filepath = ""
+    geo_filepath = ""
 
     # Load the json file
     with open(omni_file, 'r') as f:
@@ -64,7 +56,14 @@ def loadOmni(self, omni_file):
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
         loadProcessedOmni(video_filepath, camera_filepath, geo_filepath)
     else:
-        bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT')
+        bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
+            isVideoFileMissing=isVideoFileMissing,
+            isCameraFileMissing=isCameraFileMissing,
+            isGeoFileMissing=isGeoFileMissing,
+            CameraPath=camera_filepath,
+            VideoPath=video_filepath,
+            GeoPath=geo_filepath
+        )
 
 def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath):
     # Import the .abc file into the blender scene
