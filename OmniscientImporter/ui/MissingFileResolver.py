@@ -9,6 +9,7 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
     bl_idname = "wm.select_file"
     bl_label = "Select File"
 
+    filter_glob: StringProperty()
     filepath: StringProperty(name="File Path", description="Filepath used for setting the path", subtype='FILE_PATH')
 
     file_type: StringProperty() # Store the type of file being selected
@@ -48,6 +49,10 @@ class MissingFileResolver(bpy.types.Operator):
     VideoPath: StringProperty(description="video's absolute file path")
     GeoPath: StringProperty(description="gemoetry's absolute file path")
 
+    CameraFilter: StringProperty(default="*.abc",options={'HIDDEN'})
+    VideoFilter: StringProperty(default="*.mov",options={'HIDDEN'})
+    GeoFilter: StringProperty(default="*.obj",options={'HIDDEN'})
+
     def draw(self, context):
         lay = self.layout
 
@@ -58,6 +63,7 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "CameraPath", text="Camera", icon='ERROR')
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "CAMERA"
+            op.filter_glob = self.CameraFilter
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
@@ -69,6 +75,7 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "VideoPath", text="Video", icon='ERROR',)
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "VIDEO"
+            op.filter_glob = self.VideoFilter
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
@@ -80,6 +87,7 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "GeoPath", text="Geometry", icon='ERROR')
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "GEO"
+            op.filter_glob = self.GeoFilter
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
