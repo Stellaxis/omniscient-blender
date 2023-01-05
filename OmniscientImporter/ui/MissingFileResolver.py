@@ -1,4 +1,5 @@
 import bpy
+import os
 from bpy.props import StringProperty, BoolProperty
 from ..loadProcessedOmni import loadProcessedOmni
 
@@ -10,9 +11,6 @@ class SelectFileOperator(bpy.types.Operator):
     filepath: StringProperty(name="File Path", description="Filepath used for setting the path", subtype='FILE_PATH')
 
     file_type: StringProperty() # Store the type of file being selected
-    isVideoFileMissing: BoolProperty()
-    isCameraFileMissing: BoolProperty()
-    isGeoFileMissing: BoolProperty()
     CameraPath: StringProperty()
     VideoPath: StringProperty()
     GeoPath: StringProperty()
@@ -28,9 +26,9 @@ class SelectFileOperator(bpy.types.Operator):
 
         # Have to open again because of this issue : https://blender.stackexchange.com/questions/262627/prevent-properties-dialog-from-closing-during-file-path-selection
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
-            isVideoFileMissing=self.isVideoFileMissing,
-            isCameraFileMissing=self.isCameraFileMissing,
-            isGeoFileMissing=self.isGeoFileMissing,
+            isVideoFileMissing=not os.path.exists(self.VideoPath),
+            isCameraFileMissing=not os.path.exists(self.CameraPath),
+            isGeoFileMissing=not os.path.exists(self.GeoPath),
             CameraPath=self.CameraPath,
             VideoPath=self.VideoPath,
             GeoPath=self.GeoPath
@@ -64,9 +62,6 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "CameraPath", text="Camera", icon='ERROR')
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "CAMERA"
-            op.isVideoFileMissing = self.isVideoFileMissing
-            op.isCameraFileMissing = self.isCameraFileMissing
-            op.isGeoFileMissing = self.isGeoFileMissing
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
@@ -78,9 +73,6 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "VideoPath", text="Video", icon='ERROR',)
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "VIDEO"
-            op.isVideoFileMissing = self.isVideoFileMissing
-            op.isCameraFileMissing = self.isCameraFileMissing
-            op.isGeoFileMissing = self.isGeoFileMissing
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
@@ -92,9 +84,6 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "GeoPath", text="Geometry", icon='ERROR')
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')
             op.file_type = "GEO"
-            op.isVideoFileMissing = self.isVideoFileMissing
-            op.isCameraFileMissing = self.isCameraFileMissing
-            op.isGeoFileMissing = self.isGeoFileMissing
             op.CameraPath = self.CameraPath
             op.VideoPath = self.VideoPath
             op.GeoPath = self.GeoPath
