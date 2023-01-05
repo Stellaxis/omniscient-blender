@@ -28,8 +28,8 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
 
         # Have to open again because of this issue : https://blender.stackexchange.com/questions/262627/prevent-properties-dialog-from-closing-during-file-path-selection
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
-            isVideoFileMissing=not os.path.exists(self.VideoPath),
             isCameraFileMissing=not os.path.exists(self.CameraPath),
+            isVideoFileMissing=not os.path.exists(self.VideoPath),
             isGeoFileMissing=not os.path.exists(self.GeoPath),
             CameraPath=self.CameraPath,
             VideoPath=self.VideoPath,
@@ -42,8 +42,8 @@ class MissingFileResolver(bpy.types.Operator):
     bl_label = "Missing File"
     bl_idname = "wm.missing_file_resolver"
 
-    isVideoFileMissing: BoolProperty(default=True)
     isCameraFileMissing: BoolProperty(default=True)
+    isVideoFileMissing: BoolProperty(default=True)
     isGeoFileMissing: BoolProperty(default=True)
     CameraPath: StringProperty(description="camera's absolute file path")
     VideoPath: StringProperty(description="video's absolute file path")
