@@ -1,9 +1,10 @@
 import bpy
 import os
 from bpy.props import StringProperty, BoolProperty
+from bpy_extras.io_utils import ImportHelper
 from ..loadProcessedOmni import loadProcessedOmni
 
-class SelectFileOperator(bpy.types.Operator):
+class SelectFileOperator(bpy.types.Operator, ImportHelper):
     """Operator to select a file"""
     bl_idname = "wm.select_file"
     bl_label = "Select File"
@@ -34,11 +35,6 @@ class SelectFileOperator(bpy.types.Operator):
             GeoPath=self.GeoPath
         )
         return {'FINISHED'}
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        wm.fileselect_add(self)
-        return {'RUNNING_MODAL'}
 
 class MissingFileResolver(bpy.types.Operator):
     """Open the Missing File box"""
