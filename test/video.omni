@@ -1,7 +1,8 @@
 {
     "version": "0.0.1",
     "blender": {
-        "minimum_addon_version" : "0.0.1"
+        "minimum_addon_version" : "0.0.1",
+        "ideal_addon_version" : "0.0.1"
     },
     "data": {
         "video_relative_path": "./video.mov",
