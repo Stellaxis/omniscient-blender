@@ -56,7 +56,7 @@ class MissingFileResolver(bpy.types.Operator):
     def draw(self, context):
         lay = self.layout
 
-        lay.label(text="Some files can't be located, locate them:")
+        lay.label(text="Some files can't be located:")
 
         row = lay.row(align=True)
         if self.isCameraFileMissing:
