@@ -2,7 +2,7 @@ import bpy
 import json
 import os
 from . import bl_info
-from .ui.info_popups import showTextPopup
+from .ui.infoPopups import showTextPopup
 
 def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath):
     # Import the .abc file into the blender scene
