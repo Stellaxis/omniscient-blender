@@ -4,7 +4,7 @@ import os
 from . import bl_info
 from .ui.infoPopups import showTextPopup
 
-def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath):
+def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     # Import the .abc file into the blender scene
     bpy.ops.wm.alembic_import(filepath=camera_filepath)
 
