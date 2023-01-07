@@ -16,15 +16,15 @@ def loadOmni(self, omni_file):
     with open(omni_file, 'r') as f:
         data = json.load(f)
         
-    # Check the minimum plugin version specified in the .json file
+    # Check the minimum addon version specified in the .json file
     blender_data = data['blender']
     if blender_data:
-        minimum_plugin_version = blender_data['minimum_plugin_version']
-        if minimum_plugin_version:
+        minimum_addon_version = blender_data['minimum_addon_version']
+        if minimum_addon_version:
             current_version = bl_info['version']
             current_version_str = ".".join(str(x) for x in current_version)
-            if current_version_str < minimum_plugin_version:
-                self.report({'ERROR'}, str(f"This .omni file requires at least version {minimum_plugin_version} of the Blender plugin, but the current version is {current_version_str}"))
+            if current_version_str < minimum_addon_version:
+                self.report({'ERROR'}, str(f"This .omni file requires at least version {minimum_addon_version} of the Blender addon, but the current version is {current_version_str}"))
                 return {'CANCELLED'}
 
     # Get the filepaths from the json data
