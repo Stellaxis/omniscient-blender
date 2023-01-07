@@ -1,4 +1,4 @@
-# Omniscient Blender &middot; [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Stellaxis/omniscient-blender)
+# Omniscient Blender &middot; [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](LICENSE)
 
 An add-on to easily import shots, with their corresponding tracking datas and LiDAR scans recorded with the [Omniscient iOS app](https://omniscient-app.com/), into Blender.
 
