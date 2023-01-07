@@ -1,6 +1,6 @@
 # Omniscient Blender &middot; [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/Stellaxis/omniscient-blender)
 
-A tool for importing tracked data from the [Omniscient iOS app](https://omniscient-app.com/) into Blender.
+An add-on to easily import shots, with their corresponding tracking datas and LiDAR scans recorded with the [Omniscient iOS app](https://omniscient-app.com/), into Blender.
 
 ## Compatibility
 
@@ -19,10 +19,10 @@ To install the Omniscient Blender addon, follow these steps:
 
 To use the Omniscient Blender addon, follow these steps:
 
-1. Launch the [Omniscient iOS app](https://omniscient-app.com/) and capture your camera movements.
-2. Export the tracked data from the app.
+1. Launch the [Omniscient iOS app](https://omniscient-app.com/) and capture your shots.
+2. Export the videos, cameras and geometries from the app.
 3. In Blender, go to File > Import > Omniscient (.omni).
-4. Select the exported tracked data file (.omni).
+4. Select the exported .omni file.
 5. The tracked data will be imported in the scene.
 
 ## Support
