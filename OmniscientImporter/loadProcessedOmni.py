@@ -19,5 +19,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     cam.data.show_background_images = True
     bg = cam.data.background_images.new()
     bg.image = img
+    bg.image_user.frame_start = 1
 
     showTextPopup("Succes !")
