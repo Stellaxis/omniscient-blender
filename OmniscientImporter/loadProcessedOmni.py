@@ -1,7 +1,4 @@
 import bpy
-import json
-import os
-from . import bl_info
 from .ui.infoPopups import showTextPopup
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
