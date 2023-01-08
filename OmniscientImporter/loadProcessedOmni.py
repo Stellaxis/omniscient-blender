@@ -16,6 +16,9 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     cam = bpy.context.scene.objects['cameras']
     bpy.context.scene.render.film_transparent = True
     img = bpy.data.images.load(video_filepath)
+    width, height = img.size
+    bpy.context.scene.render.resolution_x = width
+    bpy.context.scene.render.resolution_y = height
     cam.data.show_background_images = True
     bg = cam.data.background_images.new()
     bg.image = img
