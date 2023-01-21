@@ -25,6 +25,9 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     bg.image = img
     bg.image_user.frame_start = 1
     bg.image_user.frame_duration = frame_duration
+    # If vertical change sensor fit to vertical since auto mode isn't reliable
+    if width < height:
+        cam.data.sensor_fit = 'VERTICAL'
 
     # Retime the abc to match the video FPS
     # The abc is read at 24 FPS by default and this value is hard-coded
