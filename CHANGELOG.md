@@ -1,3 +1,9 @@
+# 1.2.0 - (2023.01.22)
+
+### Features
+- Support vertical camera
+- Guide the user to download the latest version
+
 # 1.1.0 - (2023.01.14)
 
 ### Features
