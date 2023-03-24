@@ -25,6 +25,10 @@ To use the Omniscient Blender addon, follow these steps:
 4. Select the exported .omni file.
 5. The tracked data will be imported in the scene.
 
+## Packaging the addon
+
+To package the addon into a zip file, you can use the package.py script provided in the repository.
+
 ## Support
 
 For support with the Omniscient Blender addon, please contact us through our [website](https://omniscient-app.com/) or open an issue on the [GitHub repository](https://github.com/Stellaxis/omniscient-blender/issues).
