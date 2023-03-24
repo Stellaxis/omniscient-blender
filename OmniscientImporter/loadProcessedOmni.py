@@ -1,12 +1,15 @@
 import bpy
+import os
 from .ui.infoPopups import showTextPopup
 
-def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
+def loadProcessedOmni(video_filepath, camera_filepath, x_geo_filepath: list[str]):
     # Import the .abc file into the blender scene
     bpy.ops.wm.alembic_import(filepath=camera_filepath)
 
     # Import the .obj file into the blender scene
-    bpy.ops.import_scene.obj(filepath=geo_filepath)
+    for geo_filepath in x_geo_filepath:
+        if os.path.exists(geo_filepath):
+            bpy.ops.import_scene.obj(filepath=geo_filepath)
 
     # Import the .mov file into the blender scene
     # -- RENDER --

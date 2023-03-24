@@ -7,7 +7,7 @@ from .loadProcessedOmni import loadProcessedOmni
 def loadOmni(self, omni_file):
     isVideoFileMissing = False
     isCameraFileMissing = False
-    isGeoFileMissing = False
+    isGeoFileMissing = True # Will be set to false if at least on geo is found
     video_filepath = ""
     camera_filepath = ""
     geo_filepath = ""
@@ -30,13 +30,16 @@ def loadOmni(self, omni_file):
     # Get the filepaths from the json data
     video_relative_path = data['data']['video_relative_path']
     camera_relative_path = data['data']['camera_relative_path']
-    geo_relative_path = data['data']['geo_relative_path'][0]
+    x_geo_relative_path: list[str] = data['data']['geo_relative_path']
 
     # Make the filepaths absolute by combining them with the path of the .json file
     omni_dir = os.path.dirname(omni_file)
     video_filepath = os.path.join(omni_dir, video_relative_path)
     camera_filepath = os.path.join(omni_dir, camera_relative_path)
-    geo_filepath = os.path.join(omni_dir, geo_relative_path)
+    x_geo_filepath = []
+    for geo_relative_path in x_geo_relative_path :
+        geo_filepath_ = os.path.join(omni_dir, geo_relative_path)
+        x_geo_filepath.append(geo_filepath_)
 
     # Check if the video file exists
     if not os.path.exists(video_filepath):
@@ -49,12 +52,15 @@ def loadOmni(self, omni_file):
         # self.report({'ERROR'}, f"Camera file not found at {camera_filepath}")
 
     # Check if the geo file exists
-    if not os.path.exists(geo_filepath):
-        isGeoFileMissing = True
-        # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
+    for geo_filepath in x_geo_filepath :
+        if os.path.exists(geo_filepath):
+            isGeoFileMissing = False
+            geo_filepath = geo_filepath
+        # else:
+            # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
 
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
-        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath)
+        loadProcessedOmni(video_filepath, camera_filepath, x_geo_filepath)
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
             isVideoFileMissing=isVideoFileMissing,
