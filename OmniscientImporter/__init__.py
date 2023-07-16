@@ -14,7 +14,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "Import: Omniscient(.omni)",
+    "name" : "Import Omniscient(.omni)",
     "author" : "Stellaxis OÜ",
     "description" : "Import data recorded by the Omniscient iOS application.",
     "blender" : (3, 0, 0),
