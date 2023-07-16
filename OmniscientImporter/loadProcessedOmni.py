@@ -2,11 +2,22 @@ import bpy
 from .ui.infoPopups import showTextPopup
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
+    # Import the geo file into the blender scene
+    # .obj
+    if geo_filepath.endswith('.obj'):
+        bpy.ops.import_scene.obj(filepath=geo_filepath)
+    # .usd / .usdc / .usda
+    elif geo_filepath.endswith('.usd') or geo_filepath.endswith('.usdc') or geo_filepath.endswith('.usda'):
+        bpy.ops.wm.usd_import(filepath=geo_filepath)
+    # .ply
+    elif geo_filepath.endswith('.ply'):
+        bpy.ops.import_mesh.ply(filepath=geo_filepath)
+    # .stl
+    elif geo_filepath.endswith('.stl'):
+        bpy.ops.import_mesh.stl(filepath=geo_filepath)
+
     # Import the .abc file into the blender scene
     bpy.ops.wm.alembic_import(filepath=camera_filepath)
-
-    # Import the .obj file into the blender scene
-    bpy.ops.import_scene.obj(filepath=geo_filepath)
 
     # Import the .mov file into the blender scene
     # -- RENDER --
