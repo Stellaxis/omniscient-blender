@@ -4,7 +4,7 @@ An add-on to easily import shots, with their corresponding tracking datas and Li
 
 ## Compatibility
 
-The Omniscient Blender addon is compatible with Blender 2.8 and above.
+The Omniscient Blender addon is compatible with Blender 3.0 and above.
 
 ## Installation
 
