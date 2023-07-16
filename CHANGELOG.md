@@ -1,3 +1,9 @@
+# 1.3.0 - (2023.07.16)
+
+### Features
+- Support usd/ply/stl import
+- Rename add-on
+
 # 1.2.0 - (2023.01.22)
 
 ### Features
