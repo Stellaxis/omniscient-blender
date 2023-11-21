@@ -5,7 +5,16 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     # Import the geo file into the blender scene
     # .obj
     if geo_filepath.endswith('.obj'):
-        bpy.ops.import_scene.obj(filepath=geo_filepath)
+        # Get Blender version
+        major, minor, patch = bpy.app.version
+
+        if major >= 4:
+            # For Blender 4.0 and above
+            bpy.ops.wm.obj_import(filepath=geo_filepath)
+        else:
+            # For Blender versions before 4.0
+            bpy.ops.import_scene.obj(filepath=geo_filepath)
+
     # .usd / .usdc / .usda
     elif geo_filepath.endswith('.usd') or geo_filepath.endswith('.usdc') or geo_filepath.endswith('.usda'):
         bpy.ops.wm.usd_import(filepath=geo_filepath)
