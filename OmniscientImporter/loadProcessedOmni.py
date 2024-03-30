@@ -30,10 +30,10 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     if camera_filepath.endswith('.abc'):
         bpy.ops.wm.alembic_import(filepath=camera_filepath)
     # .usd / .usdc / .usda
-    if camera_filepath.endswith('.usd') or camera_filepath.endswith('.usdc') or camera_filepath.endswith('.usda'):
+    elif camera_filepath.endswith('.usd') or camera_filepath.endswith('.usdc') or camera_filepath.endswith('.usda'):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
     # .fbx
-    if camera_filepath.endswith('.fbx'):
+    elif camera_filepath.endswith('.fbx'):
         bpy.ops.import_scene.fbx(filepath=camera_filepath)
 
     # Import the .mov file into the blender scene
