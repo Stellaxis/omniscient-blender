@@ -25,8 +25,10 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     elif geo_filepath.endswith('.stl'):
         bpy.ops.import_mesh.stl(filepath=geo_filepath)
 
-    # Import the .abc file into the blender scene
-    bpy.ops.wm.alembic_import(filepath=camera_filepath)
+    # Import the camera file into the blender scene
+    # .abc
+    if camera_filepath.endswith('.abc'):
+        bpy.ops.wm.alembic_import(filepath=camera_filepath)
 
     # Import the .mov file into the blender scene
     # -- RENDER --
