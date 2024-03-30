@@ -26,11 +26,12 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
         bpy.ops.import_mesh.stl(filepath=geo_filepath)
 
     # Import the camera file into the blender scene
+    initial_camera_state = capture_camera_state()
     import_camera(camera_filepath)
+    imported_cam = find_new_camera(initial_camera_state)
 
     # Import the .mov file into the blender scene
     # -- RENDER --
-    cam = bpy.context.scene.objects['cameras']
     bpy.context.scene.render.film_transparent = True
     img = bpy.data.images.load(video_filepath)
     clip = bpy.data.movieclips.load(video_filepath) # Load only to get fps
@@ -40,14 +41,16 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     bpy.context.scene.render.resolution_x = width
     bpy.context.scene.render.resolution_y = height
     bpy.context.scene.render.fps = int(fps)
-    cam.data.show_background_images = True
-    bg = cam.data.background_images.new()
-    bg.image = img
-    bg.image_user.frame_start = 1
-    bg.image_user.frame_duration = frame_duration
-    # If vertical change sensor fit to vertical since auto mode isn't reliable
-    if width < height:
-        cam.data.sensor_fit = 'VERTICAL'
+
+    if imported_cam:
+        imported_cam.data.show_background_images = True
+        bg = imported_cam.data.background_images.new()
+        bg.image = img
+        bg.image_user.frame_start = 1
+        bg.image_user.frame_duration = frame_duration
+        # If vertical change sensor fit to vertical since auto mode isn't reliable
+        if width < height:
+            imported_cam.data.sensor_fit = 'VERTICAL'
 
     # Retime the abc to match the video FPS
     # The abc is read at 24 FPS by default and this value is hard-coded
@@ -73,6 +76,10 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
 
     showTextPopup("Succes !")
 
+def capture_camera_state():
+    # Capture the initial state of camera objects in the scene
+    return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
+
 def import_camera(camera_filepath):
     if camera_filepath.endswith('.abc'):
         bpy.ops.wm.alembic_import(filepath=camera_filepath)
@@ -80,3 +87,14 @@ def import_camera(camera_filepath):
         bpy.ops.import_scene.fbx(filepath=camera_filepath)
     elif camera_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
+
+
+def find_new_camera(initial_state):
+    # Find the newly imported camera by comparing the current state to the initial state
+    current_state = set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
+    new_cameras = current_state - initial_state
+    if new_cameras:
+        # Assuming the first new camera found is the one imported
+        return bpy.context.scene.objects[next(iter(new_cameras))]
+    else:
+        return None
