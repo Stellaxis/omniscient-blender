@@ -28,9 +28,18 @@ def loadOmni(self, omni_file):
                 return {'CANCELLED'}
 
     # Get the filepaths from the json data
-    video_relative_path = data['data']['video_relative_path']
-    camera_relative_path = data['data']['camera_relative_path']
-    geo_relative_path = data['data']['geo_relative_path'][0]
+    video_relative_path = ""
+    camera_relative_path = ""
+    geo_relative_path = ""
+    omni_file_version = data['version']
+    if omni_file_version >= "2.0.0":
+        video_relative_path = data['data']['video']['relative_path']
+        camera_relative_path = data['data']['camera']['relative_path']
+        geo_relative_path = data['data']['geometry']['relative_path'][0]  
+    else:
+        video_relative_path = data['data']['video_relative_path']
+        camera_relative_path = data['data']['camera_relative_path']
+        geo_relative_path = data['data']['geo_relative_path'][0]
 
     # Make the filepaths absolute by combining them with the path of the .json file
     omni_dir = os.path.dirname(omni_file)

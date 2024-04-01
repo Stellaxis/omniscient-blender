@@ -1,12 +1,27 @@
 {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "blender": {
-        "minimum_addon_version" : "1.2.0",
-        "ideal_addon_version" : "1.3.1"
+        "minimum_addon_version": "1.4.0",
+        "ideal_addon_version": "1.4.0"
+    },
+    "cinema4d": {
+        "minimum_plugin_version": "1.0.0",
+        "ideal_plugin_version": "1.0.0"
     },
     "data": {
-        "video_relative_path": "./video.mov",
-        "camera_relative_path": "./camera.abc",
-        "geo_relative_path": ["./geometry_1.obj", "./geometry_2.obj"]
+        "video": {
+            "relative_path": "./video.mov",
+            "resolution": {
+                "width": 1080,
+                "height": 1920
+            },
+            "fps": 30
+        },
+        "camera": {
+            "relative_path": "./camera.abc"
+        },
+        "geometry": {
+            "relative_path": ["./geometry_1.obj", "./geometry_2.obj"]
+        },
     }
 }
