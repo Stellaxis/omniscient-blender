@@ -1,7 +1,7 @@
 import bpy
 from .ui.infoPopups import showTextPopup
 
-def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
+def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None):
     # Import the geo file into the blender scene
     # .obj
     if geo_filepath.endswith('.obj'):
@@ -30,17 +30,28 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
     import_camera(camera_filepath)
     imported_cam = find_new_camera(initial_camera_state)
 
+    # Ensure camera_fps is a float or None if not provided or conversion fails
+    try:
+        camera_fps = float(camera_fps) if camera_fps is not None else None
+    except ValueError:
+        print("Invalid camera FPS value; retiming will not be applied.")
+        camera_fps = None
+    
     # Import the .mov file into the blender scene
     # -- RENDER --
     bpy.context.scene.render.film_transparent = True
     img = bpy.data.images.load(video_filepath)
     clip = bpy.data.movieclips.load(video_filepath) # Load only to get fps
-    fps = clip.fps
+    clip_fps = clip.fps
     width, height = img.size
     frame_duration = img.frame_duration
     bpy.context.scene.render.resolution_x = width
     bpy.context.scene.render.resolution_y = height
-    bpy.context.scene.render.fps = int(fps)
+    bpy.context.scene.render.fps = int(clip_fps)
+
+    # Setting scene's start and end frames to match the video clip's duration
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = frame_duration 
 
     if imported_cam:
         imported_cam.data.show_background_images = True
@@ -53,26 +64,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath):
             imported_cam.data.sensor_fit = 'VERTICAL'
 
     # Retime the abc to match the video FPS
-    # The abc is read at 24 FPS by default and this value is hard-coded
-    cache_files = bpy.data.cache_files
-    if len(cache_files) > 0:
-        last_cache_file = cache_files[len(cache_files) - 1]
-        
-        cache_file = bpy.data.cache_files[last_cache_file.name]
-        
-        cache_file.override_frame = True
-        
-        cache_file.frame = 1
-        cache_file.keyframe_insert(data_path="frame", frame = 1)
-        
-        cache_file.frame = ( clip.frame_duration * (clip.fps/24))
-        cache_file.keyframe_insert(data_path="frame", frame = clip.frame_duration)
-        
-        #Set the animation to linear
-        for keyframes in cache_file.animation_data.action.fcurves[0].keyframe_points.values():
-            keyframes.interpolation = 'LINEAR'
-    else:
-        print("No cache files found.")
+    if camera_fps is not None:
+        retime_alembic(clip_fps, camera_fps, frame_duration)
 
     showTextPopup("Succes !")
 
@@ -98,3 +91,35 @@ def find_new_camera(initial_state):
         return bpy.context.scene.objects[next(iter(new_cameras))]
     else:
         return None
+    
+def retime_alembic(clip_fps, camera_fps, frame_duration):
+    cache_files = bpy.data.cache_files
+    if cache_files:
+        last_cache_file = cache_files[-1]
+        
+        last_cache_file.override_frame = True
+        
+        # Calculate new first and last frame indices based on FPS changes
+        first_time_value, new_total_time_including_first = calculate_frame_indices(camera_fps, clip_fps, frame_duration)
+        
+        # Insert the starting frame keyframe
+        last_cache_file.frame = first_time_value
+        last_cache_file.keyframe_insert(data_path="frame", frame=1)
+        
+        # Insert the keyframe for the new end frame
+        last_cache_file.frame = new_total_time_including_first
+        last_cache_file.keyframe_insert(data_path="frame", frame=frame_duration)
+        
+        # Ensure linear interpolation for all keyframes in the action's fcurves
+        if last_cache_file.animation_data and last_cache_file.animation_data.action:
+            for fcurve in last_cache_file.animation_data.action.fcurves:
+                for keyframe in fcurve.keyframe_points:
+                    keyframe.interpolation = 'LINEAR'
+    else:
+        print("No cache files found.")
+
+def calculate_frame_indices(camera_fps, clip_fps, frame_duration):
+    first_frame_index = (1 / camera_fps) * clip_fps
+    total_duration_seconds = (frame_duration - 1) / camera_fps
+    new_total_frames_including_first = (total_duration_seconds * clip_fps) + first_frame_index
+    return first_frame_index, new_total_frames_including_first

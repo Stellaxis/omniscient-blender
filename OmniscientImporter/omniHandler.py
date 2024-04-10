@@ -27,6 +27,10 @@ def loadOmni(self, omni_file):
                 bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version = minimum_addon_version, current_version_str = current_version_str)
                 return {'CANCELLED'}
 
+    # Extract camera FPS value
+    camera_data = data.get("data", {}).get("camera", {})
+    camera_fps = camera_data.get("fps")
+
     # Get the filepaths from the json data
     video_relative_path = ""
     camera_relative_path = ""
@@ -63,7 +67,7 @@ def loadOmni(self, omni_file):
         # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
 
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
-        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath)
+        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps)
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
             isVideoFileMissing=isVideoFileMissing,
