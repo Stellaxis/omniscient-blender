@@ -1,3 +1,12 @@
+# 1.4.0 - (2023.04.02)
+
+### Features
+- Support omni file v2.0.0
+- Support usd camera import
+- Support fbx camera import
+- Support abc camera with different fps
+- Import camera with any names
+
 # 1.3.1 - (2023.11.21)
 
 ### Fix
