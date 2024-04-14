@@ -27,7 +27,7 @@ To use the Omniscient Blender addon, follow these steps:
 
 ## Packaging the addon
 
-To package the addon into a zip file, you can use the package.py script provided in the repository.
+To package the addon into a zip file, use the package.py script provided in the repository. Unzip the outup zip. Rename the unziped folder to "OmniscientImporter". Zip the "OmniscientImporter" folder and rename the resulting zip with the name of the inital zip file generated with package.py.
 
 ## Support
 
