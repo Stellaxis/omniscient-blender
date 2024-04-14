@@ -25,7 +25,7 @@ else:
     version_str = ""
 
 # Define the name of the zip file to create
-zip_name = f"{addon_name}_{version_str}.zip"
+zip_name = f"{addon_name}_blender_{version_str}.zip"
 
 # Define the path to the output zip file
 output_zip_path = os.path.join(output_folder, zip_name)
