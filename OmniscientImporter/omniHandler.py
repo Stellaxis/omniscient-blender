@@ -11,6 +11,7 @@ def loadOmni(self, omni_file):
     video_filepath = ""
     camera_filepath = ""
     geo_filepath = ""
+    camera_fps = None
 
     # Load the json file
     with open(omni_file, 'r') as f:
@@ -27,10 +28,6 @@ def loadOmni(self, omni_file):
                 bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version = minimum_addon_version, current_version_str = current_version_str)
                 return {'CANCELLED'}
 
-    # Extract camera FPS value
-    camera_data = data.get("data", {}).get("camera", {})
-    camera_fps = camera_data.get("fps")
-
     # Get the filepaths from the json data
     video_relative_path = ""
     camera_relative_path = ""
@@ -39,11 +36,15 @@ def loadOmni(self, omni_file):
     if omni_file_version >= "2.0.0":
         video_relative_path = data['data']['video']['relative_path']
         camera_relative_path = data['data']['camera']['relative_path']
-        geo_relative_path = data['data']['geometry']['relative_path'][0]  
+        geo_relative_path = data['data']['geometry']['relative_path'][0]
+        # Extract camera FPS value
+        camera_data = data.get("data", {}).get("camera", {})
+        camera_fps = camera_data.get("fps")
     else:
         video_relative_path = data['data']['video_relative_path']
         camera_relative_path = data['data']['camera_relative_path']
         geo_relative_path = data['data']['geo_relative_path'][0]
+        camera_fps = 24 # 24fps is the only fps used before v2.0.0
 
     # Make the filepaths absolute by combining them with the path of the .json file
     omni_dir = os.path.dirname(omni_file)
