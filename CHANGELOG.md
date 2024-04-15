@@ -1,3 +1,8 @@
+# 1.4.1 - (2023.04.16)
+
+### Fix
+- Sync camera of omni v1 files
+
 # 1.4.0 - (2023.04.15)
 
 ### Features
