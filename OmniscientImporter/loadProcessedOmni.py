@@ -1,7 +1,7 @@
 import bpy
 from .ui.infoPopups import showTextPopup
 
-def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None):
+def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
     # Import the geo file into the blender scene
     # .obj
     if geo_filepath.endswith('.obj'):
@@ -62,6 +62,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         # If vertical change sensor fit to vertical since auto mode isn't reliable
         if width < height:
             imported_cam.data.sensor_fit = 'VERTICAL'
+        apply_camera_settings(imported_cam, camera_settings)
 
     # Retime the abc to match the video FPS
     if camera_fps is not None:
@@ -117,6 +118,15 @@ def retime_alembic(clip_fps, camera_fps, frame_duration):
                     keyframe.interpolation = 'LINEAR'
     else:
         print("No cache files found.")
+
+def apply_camera_settings(camera, settings):
+    scene = bpy.context.scene
+    for frame_index, frame_data in enumerate(settings, start=1):
+        scene.frame_set(frame_index)  # Set the current frame
+        camera.data.lens = frame_data['focal_length']
+        camera.data.dof.focus_distance = frame_data['focus_distance']
+        camera.data.keyframe_insert(data_path="lens", frame=frame_index)
+        camera.data.dof.keyframe_insert(data_path="focus_distance", frame=frame_index)
 
 def calculate_frame_indices(camera_fps, clip_fps, frame_duration):
     first_frame_index = (1 / camera_fps) * clip_fps

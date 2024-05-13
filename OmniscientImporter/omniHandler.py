@@ -46,6 +46,8 @@ def loadOmni(self, omni_file):
         geo_relative_path = data['data']['geo_relative_path'][0]
         camera_fps = 24 # 24fps is the only fps used before v2.0.0
 
+    camera_settings = data['data']['camera']['frames']
+
     # Make the filepaths absolute by combining them with the path of the .json file
     omni_dir = os.path.dirname(omni_file)
     video_filepath = os.path.join(omni_dir, video_relative_path)
@@ -68,7 +70,8 @@ def loadOmni(self, omni_file):
         # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
 
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
-        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps)
+        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps, camera_settings)
+
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
             isVideoFileMissing=isVideoFileMissing,
