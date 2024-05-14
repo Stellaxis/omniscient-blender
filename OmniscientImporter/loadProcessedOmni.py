@@ -59,8 +59,22 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = frame_duration 
 
+    # Create or get the "Omniscient" collection
+    collection_name = "Omniscient"
+    if collection_name in bpy.data.collections:
+        omniscient_collection = bpy.data.collections[collection_name]
+    else:
+        omniscient_collection = bpy.data.collections.new(collection_name)
+        bpy.context.scene.collection.children.link(omniscient_collection)
+
+    def move_to_omniscient_collection(obj):
+        for coll in obj.users_collection:
+            coll.objects.unlink(obj)
+        omniscient_collection.objects.link(obj)
+
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
+        move_to_omniscient_collection(imported_cam)
         imported_cam.data.show_background_images = True
         bg = imported_cam.data.background_images.new()
         bg.image = img
@@ -73,6 +87,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
+        move_to_omniscient_collection(imported_mesh)
 
     # Retime the abc to match the video FPS
     if camera_fps is not None:
