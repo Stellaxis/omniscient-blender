@@ -35,6 +35,20 @@ class OMNI_PT_ObjectsPanel(Panel):
         row.prop(context.scene, "Scan_Omni", text="Scan")
 
 
+class OMNI_PT_PreferencesPanel(Panel):
+    bl_label = "Import Preferences"
+    bl_idname = "OMNI_PT_import_preferences"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Omniscient'
+    bl_parent_id = "OMNI_PT_import"
+    bl_options = {'DEFAULT_CLOSED'}  # This makes the panel collapsed by default
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(context.scene, "use_shadow_catcher", text="Set Mesh as Shadow Catcher")
+
+
 class OMNI_OT_ScanOmni(Operator):
     bl_idname = "scan.omni"
     bl_label = "Scan Omni"
@@ -55,7 +69,13 @@ def register():
         name="Scan_Omni",
         type=bpy.types.Object
     )
+    bpy.types.Scene.use_shadow_catcher = bpy.props.BoolProperty(
+        name="Use Shadow Catcher",
+        description="Automatically set imported mesh as shadow catcher",
+        default=False
+    )
 
 def unregister():
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
+    del bpy.types.Scene.use_shadow_catcher

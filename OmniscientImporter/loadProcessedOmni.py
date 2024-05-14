@@ -87,6 +87,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
+        if bpy.context.scene.use_shadow_catcher:
+            imported_mesh.is_shadow_catcher = True
         move_to_omniscient_collection(imported_mesh)
 
     # Retime the abc to match the video FPS
