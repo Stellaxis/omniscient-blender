@@ -59,6 +59,16 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = frame_duration 
 
+    # Adjust the timeline view to fit the entire range of frames
+    for area in bpy.context.screen.areas:
+        if area.type == 'DOPESHEET_EDITOR': 
+            override = bpy.context.copy()
+            override["area"] = area
+            override["region"] = area.regions[-1]
+            with bpy.context.temp_override(**override):
+                bpy.ops.action.view_all()
+            break
+
     # Create or get the "Omniscient" collection
     collection_name = "Omniscient"
     if collection_name in bpy.data.collections:
