@@ -75,6 +75,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
         move_to_omniscient_collection(imported_cam)
+        imported_cam.data.dof.use_dof = True
         imported_cam.data.show_background_images = True
         bg = imported_cam.data.background_images.new()
         bg.image = img
