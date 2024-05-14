@@ -82,6 +82,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             coll.objects.unlink(obj)
         omniscient_collection.objects.link(obj)
 
+    prefs = bpy.context.preferences.addons['OmniscientImporter'].preferences
+
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
         move_to_omniscient_collection(imported_cam)
@@ -98,9 +100,9 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
-        if bpy.context.scene.use_shadow_catcher:
+        if prefs.use_shadow_catcher:
             imported_mesh.is_shadow_catcher = True
-        if bpy.context.scene.use_holdout:
+        if prefs.use_holdout:
             imported_mesh.is_holdout = True 
         move_to_omniscient_collection(imported_mesh)
 
