@@ -2,6 +2,9 @@ import bpy
 from .ui.infoPopups import showTextPopup
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
+    # Capture the initial state of mesh objects in the scene
+    initial_mesh_state = capture_mesh_state()
+
     # Import the geo file into the blender scene
     # .obj
     if geo_filepath.endswith('.obj'):
@@ -25,6 +28,9 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     elif geo_filepath.endswith('.stl'):
         bpy.ops.import_mesh.stl(filepath=geo_filepath)
 
+    # Find the newly imported mesh
+    imported_mesh = find_new_mesh(initial_mesh_state)
+    
     # Import the camera file into the blender scene
     initial_camera_state = capture_camera_state()
     import_camera(camera_filepath)
@@ -36,7 +42,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     except ValueError:
         print("Invalid camera FPS value; retiming will not be applied.")
         camera_fps = None
-    
+
     # Import the .mov file into the blender scene
     # -- RENDER --
     bpy.context.scene.render.film_transparent = True
@@ -54,6 +60,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     bpy.context.scene.frame_end = frame_duration 
 
     if imported_cam:
+        bpy.context.scene.Camera_Omni = imported_cam
         imported_cam.data.show_background_images = True
         bg = imported_cam.data.background_images.new()
         bg.image = img
@@ -64,11 +71,14 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             imported_cam.data.sensor_fit = 'VERTICAL'
         apply_camera_settings(imported_cam, camera_settings)
 
+    if imported_mesh:
+        bpy.context.scene.Scan_Omni = imported_mesh
+
     # Retime the abc to match the video FPS
     if camera_fps is not None:
         retime_alembic(clip_fps, camera_fps, frame_duration)
 
-    showTextPopup("Succes !")
+    showTextPopup("Success!")
 
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
@@ -82,17 +92,30 @@ def import_camera(camera_filepath):
     elif camera_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
 
-
 def find_new_camera(initial_state):
     # Find the newly imported camera by comparing the current state to the initial state
     current_state = set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
     new_cameras = current_state - initial_state
     if new_cameras:
-        # Assuming the first new camera found is the one imported
-        return bpy.context.scene.objects[next(iter(new_cameras))]
+        new_camera_name = next(iter(new_cameras))
+        return bpy.context.scene.objects[new_camera_name]
     else:
         return None
-    
+
+def capture_mesh_state():
+    # Capture the initial state of mesh objects in the scene
+    return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'MESH')
+
+def find_new_mesh(initial_state):
+    # Find the newly imported mesh by comparing the current state to the initial state
+    current_state = set(obj.name for obj in bpy.context.scene.objects if obj.type == 'MESH')
+    new_meshes = current_state - initial_state
+    if new_meshes:
+        new_mesh_name = next(iter(new_meshes))
+        return bpy.context.scene.objects[new_mesh_name]
+    else:
+        return None
+
 def retime_alembic(clip_fps, camera_fps, frame_duration):
     cache_files = bpy.data.cache_files
     if cache_files:
