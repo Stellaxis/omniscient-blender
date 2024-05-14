@@ -15,6 +15,22 @@ class OMNI_PT_ImportPanel(Panel):
         layout.operator("load.omni", text="Import .omni")
 
 
+class OMNI_PT_PreferencesPanel(Panel):
+    bl_label = "Import Preferences"
+    bl_idname = "OMNI_PT_import_preferences"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Omniscient'
+    bl_parent_id = "OMNI_PT_import"
+    bl_options = {'DEFAULT_CLOSED'}
+    bl_order = 0
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(context.scene, "use_shadow_catcher", text="Set Mesh as Shadow Catcher")
+        layout.prop(context.scene, "use_holdout", text="Set Mesh as Holdout")
+
+
 class OMNI_PT_ObjectsPanel(Panel):
     bl_label = "Imported Objects"
     bl_idname = "OMNI_PT_objects"
@@ -22,7 +38,8 @@ class OMNI_PT_ObjectsPanel(Panel):
     bl_region_type = 'UI'
     bl_category = 'Omniscient'
     bl_parent_id = "OMNI_PT_import"
-    bl_options = {'DEFAULT_CLOSED'}  # This makes the panel collapsed by default
+    bl_options = {'DEFAULT_CLOSED'}
+    bl_order = 1
 
     def draw(self, context):
         layout = self.layout
@@ -33,20 +50,6 @@ class OMNI_PT_ObjectsPanel(Panel):
         
         row = layout.row()
         row.prop(context.scene, "Scan_Omni", text="Scan")
-
-
-class OMNI_PT_PreferencesPanel(Panel):
-    bl_label = "Import Preferences"
-    bl_idname = "OMNI_PT_import_preferences"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Omniscient'
-    bl_parent_id = "OMNI_PT_import"
-    bl_options = {'DEFAULT_CLOSED'}  # This makes the panel collapsed by default
-
-    def draw(self, context):
-        layout = self.layout
-        layout.prop(context.scene, "use_shadow_catcher", text="Set Mesh as Shadow Catcher")
 
 
 class OMNI_OT_ScanOmni(Operator):
@@ -74,8 +77,14 @@ def register():
         description="Automatically set imported mesh as shadow catcher",
         default=False
     )
+    bpy.types.Scene.use_holdout = bpy.props.BoolProperty(
+        name="Use Holdout",
+        description="Automatically set imported mesh as holdout",
+        default=False
+    )
 
 def unregister():
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
     del bpy.types.Scene.use_shadow_catcher
+    del bpy.types.Scene.use_holdout
