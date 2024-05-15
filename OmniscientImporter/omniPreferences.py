@@ -19,5 +19,8 @@ class OMNI_Preferences(AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
+
+        # Group 1: Import Options
+        layout.label(text="Import Options", icon='IMPORT')
         layout.prop(self, "use_shadow_catcher")
         layout.prop(self, "use_holdout")
