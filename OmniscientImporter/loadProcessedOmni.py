@@ -82,12 +82,20 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             coll.objects.unlink(obj)
         omniscient_collection.objects.link(obj)
 
+    # Get preferences
     prefs = bpy.context.preferences.addons['OmniscientImporter'].preferences
+
+    # Set renderer settings
+    bpy.context.scene.render.engine = prefs.renderer
+    if prefs.enable_motion_blur:
+        bpy.context.scene.render.motion_blur_shutter = 0.5
+        bpy.context.scene.render.use_motion_blur = True
 
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
         move_to_omniscient_collection(imported_cam)
-        imported_cam.data.dof.use_dof = True
+        if prefs.enable_dof:
+            imported_cam.data.dof.use_dof = True
         imported_cam.data.show_background_images = True
         bg = imported_cam.data.background_images.new()
         bg.image = img
