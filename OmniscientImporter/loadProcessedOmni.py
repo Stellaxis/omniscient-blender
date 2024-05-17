@@ -1,5 +1,6 @@
 import bpy
 from .ui.infoPopups import showTextPopup
+from .cameraProjectionMaterial import create_projection_shader
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
     # Capture the initial state of mesh objects in the scene
@@ -106,6 +107,11 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             imported_cam.data.sensor_fit = 'VERTICAL'
         apply_camera_settings(imported_cam, camera_settings)
 
+        # Create projection shader
+        material_name = "Scan_Material_Omni"
+        image_name = img.name
+        material = create_projection_shader(material_name, image_name, imported_cam)
+
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
         if prefs.use_shadow_catcher:
@@ -113,6 +119,13 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         if prefs.use_holdout:
             imported_mesh.is_holdout = True 
         move_to_omniscient_collection(imported_mesh)
+        
+        # Assign the material to the imported mesh
+        if material:
+            if imported_mesh.data.materials:
+                imported_mesh.data.materials[0] = material
+            else:
+                imported_mesh.data.materials.append(material)
 
     # Retime the abc to match the video FPS
     if camera_fps is not None:
