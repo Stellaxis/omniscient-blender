@@ -70,11 +70,14 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
                 bpy.ops.action.view_all()
             break
 
-    # Create or get the "Omniscient" collection
+    # Create or get the "Omniscient" collection in the current scene
     collection_name = "Omniscient"
-    if collection_name in bpy.data.collections:
-        omniscient_collection = bpy.data.collections[collection_name]
-    else:
+    omniscient_collection = None
+    for coll in bpy.context.scene.collection.children:
+        if coll.name == collection_name:
+            omniscient_collection = coll
+            break
+    if omniscient_collection is None:
         omniscient_collection = bpy.data.collections.new(collection_name)
         bpy.context.scene.collection.children.link(omniscient_collection)
 
