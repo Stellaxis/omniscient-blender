@@ -20,7 +20,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             bpy.ops.import_scene.obj(filepath=geo_filepath)
 
     # .usd / .usdc / .usda
-    elif geo_filepath.endswith('.usd') or geo_filepath.endswith('.usdc') or geo_filepath.endswith('.usda'):
+    elif geo_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=geo_filepath)
     # .ply
     elif geo_filepath.endswith('.ply'):
