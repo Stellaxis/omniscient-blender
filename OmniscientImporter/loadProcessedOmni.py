@@ -1,37 +1,75 @@
 import bpy
 from .ui.infoPopups import showTextPopup
 from .cameraProjectionMaterial import create_projection_shader
+import os
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
-    # Capture the initial state of mesh objects in the scene
-    initial_mesh_state = capture_mesh_state()
+    def get_base_name(filepath):
+        return os.path.splitext(os.path.basename(filepath))[0]
 
-    # Import the geo file into the blender scene
-    # .obj
-    if geo_filepath.endswith('.obj'):
-        # Get Blender version
-        major, minor, patch = bpy.app.version
-
-        if major >= 4:
-            # For Blender 4.0 and above
-            bpy.ops.wm.obj_import(filepath=geo_filepath)
-        else:
-            # For Blender versions before 4.0
-            bpy.ops.import_scene.obj(filepath=geo_filepath)
-
-    # .usd / .usdc / .usda
-    elif geo_filepath.endswith(('.usd', '.usdc', '.usda')):
-        bpy.ops.wm.usd_import(filepath=geo_filepath)
-    # .ply
-    elif geo_filepath.endswith('.ply'):
-        bpy.ops.import_mesh.ply(filepath=geo_filepath)
-    # .stl
-    elif geo_filepath.endswith('.stl'):
-        bpy.ops.import_mesh.stl(filepath=geo_filepath)
-
-    # Find the newly imported mesh
-    imported_mesh = find_new_mesh(initial_mesh_state)
+    base_name = get_base_name(geo_filepath).split('.')[0]
     
+    def names_match(name1, name2):
+        return name1.split('.')[0] == name2.split('.')[0]
+
+    # Create or get the "Omniscient" collection in the current scene
+    collection_name = "Omniscient"
+    existing_omniscient_collection = None
+    for coll in bpy.context.scene.collection.children:
+        if coll.name.startswith(collection_name):
+            for obj in coll.objects:
+                if obj.type == 'MESH' and names_match(obj.name, base_name):
+                    existing_omniscient_collection = coll
+                    break
+        if existing_omniscient_collection:
+            break
+
+    if existing_omniscient_collection is None:
+        omniscient_collection = bpy.data.collections.new(collection_name)
+        bpy.context.scene.collection.children.link(omniscient_collection)
+    else:
+        omniscient_collection = existing_omniscient_collection
+
+    def move_to_collection(obj, collection):
+        for coll in obj.users_collection:
+            coll.objects.unlink(obj)
+        collection.objects.link(obj)
+
+    # If a matching mesh exists, skip importing the mesh and just import the camera
+    imported_mesh = None
+    if existing_omniscient_collection is None:
+        # Capture the initial state of mesh objects in the scene
+        initial_mesh_state = capture_mesh_state()
+
+        # Import the geo file into the blender scene
+        # .obj
+        if geo_filepath.endswith('.obj'):
+            # Get Blender version
+            major, minor, patch = bpy.app.version
+
+            if major >= 4:
+                # For Blender 4.0 and above
+                bpy.ops.wm.obj_import(filepath=geo_filepath)
+            else:
+                # For Blender versions before 4.0
+                bpy.ops.import_scene.obj(filepath=geo_filepath)
+
+        # .usd / .usdc / .usda
+        elif geo_filepath.endswith(('.usd', '.usdc', '.usda')):
+            bpy.ops.wm.usd_import(filepath=geo_filepath)
+        # .ply
+        elif geo_filepath.endswith('.ply'):
+            bpy.ops.import_mesh.ply(filepath=geo_filepath)
+        # .stl
+        elif geo_filepath.endswith('.stl'):
+            bpy.ops.import_mesh.stl(filepath=geo_filepath)
+
+        # Find the newly imported mesh
+        imported_mesh = find_new_mesh(initial_mesh_state)
+
+        if imported_mesh:
+            move_to_collection(imported_mesh, omniscient_collection)
+
     # Import the camera file into the blender scene
     initial_camera_state = capture_camera_state()
     import_camera(camera_filepath)
@@ -70,22 +108,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
                 bpy.ops.action.view_all()
             break
 
-    # Create or get the "Omniscient" collection in the current scene
-    collection_name = "Omniscient"
-    omniscient_collection = None
-    for coll in bpy.context.scene.collection.children:
-        if coll.name == collection_name:
-            omniscient_collection = coll
-            break
-    if omniscient_collection is None:
-        omniscient_collection = bpy.data.collections.new(collection_name)
-        bpy.context.scene.collection.children.link(omniscient_collection)
-
-    def move_to_omniscient_collection(obj):
-        for coll in obj.users_collection:
-            coll.objects.unlink(obj)
-        omniscient_collection.objects.link(obj)
-
     # Get preferences
     prefs = bpy.context.preferences.addons['OmniscientImporter'].preferences
 
@@ -97,7 +119,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
-        move_to_omniscient_collection(imported_cam)
+        move_to_collection(imported_cam, omniscient_collection)
         if prefs.enable_dof:
             imported_cam.data.dof.use_dof = True
         imported_cam.data.show_background_images = True
@@ -121,7 +143,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             imported_mesh.is_shadow_catcher = True
         if prefs.use_holdout:
             imported_mesh.is_holdout = True 
-        move_to_omniscient_collection(imported_mesh)
         
         # Assign the material to the imported mesh
         if material:
