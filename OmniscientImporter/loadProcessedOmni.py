@@ -127,6 +127,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         bg.image = img
         bg.image_user.frame_start = 1
         bg.image_user.frame_duration = frame_duration
+        bg.alpha = 1.0
         # If vertical change sensor fit to vertical since auto mode isn't reliable
         if width < height:
             imported_cam.data.sensor_fit = 'VERTICAL'
