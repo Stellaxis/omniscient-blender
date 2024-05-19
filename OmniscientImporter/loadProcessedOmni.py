@@ -123,6 +123,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         if prefs.enable_dof:
             imported_cam.data.dof.use_dof = True
         imported_cam.data.show_background_images = True
+        imported_cam.data.clip_start = 0.01
+        imported_cam.data.clip_end = 10000
         bg = imported_cam.data.background_images.new()
         bg.image = img
         bg.image_user.frame_start = 1
