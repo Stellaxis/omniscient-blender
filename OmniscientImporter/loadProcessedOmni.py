@@ -70,6 +70,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
         if imported_mesh:
             move_to_collection(imported_mesh, omniscient_collection)
+            set_shade_smooth(imported_mesh)
 
     # Import the camera file into the blender scene
     initial_camera_state = capture_camera_state()
@@ -202,6 +203,10 @@ def find_new_mesh(initial_state):
         return bpy.context.scene.objects[new_mesh_name]
     else:
         return None
+
+def set_shade_smooth(mesh_obj):
+    bpy.context.view_layer.objects.active = mesh_obj
+    bpy.ops.object.shade_smooth()
 
 def retime_alembic(clip_fps, camera_fps, frame_duration):
     cache_files = bpy.data.cache_files
