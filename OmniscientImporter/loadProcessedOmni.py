@@ -1,6 +1,7 @@
 import bpy
 from .ui.infoPopups import showTextPopup
 from .cameraProjectionMaterial import create_projection_shader
+from .setupCompositingNodes import setup_compositing_nodes
 import os
 
 def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
@@ -96,7 +97,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     # Setting scene's start and end frames to match the video clip's duration
     bpy.context.scene.frame_start = 1
-    bpy.context.scene.frame_end = frame_duration 
+    bpy.context.scene.frame_end = frame_duration
 
     # Adjust the timeline view to fit the entire range of frames
     for area in bpy.context.screen.areas:
@@ -157,6 +158,12 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     # Retime the abc to match the video FPS
     if camera_fps is not None:
         retime_alembic(clip_fps, camera_fps, frame_duration)
+
+    # Enable shadow catcher pass
+    bpy.context.view_layer.cycles.use_pass_shadow_catcher = True
+
+    # Set up compositing nodes
+    setup_compositing_nodes(img)
 
     showTextPopup("Success!")
 
