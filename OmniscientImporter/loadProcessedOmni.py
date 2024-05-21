@@ -240,6 +240,10 @@ def apply_camera_settings(camera, settings):
         scene.frame_set(frame_index)  # Set the current frame
         camera.data.lens = frame_data['focal_length']
         camera.data.dof.focus_distance = frame_data['focus_distance']
+        if 'shutter_speed' in frame_data:
+            shutter_speed_fraction = frame_data['shutter_speed'] * scene.render.fps
+            scene.render.motion_blur_shutter = shutter_speed_fraction
+            scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame_index)
         camera.data.keyframe_insert(data_path="lens", frame=frame_index)
         camera.data.dof.keyframe_insert(data_path="focus_distance", frame=frame_index)
 
