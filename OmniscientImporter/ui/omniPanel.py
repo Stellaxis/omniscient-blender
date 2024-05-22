@@ -3,7 +3,7 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
-    if active_camera:
+    if (active_camera):
         scene.Active_Camera_Name = active_camera.name
     else:
         scene.Active_Camera_Name = "None"
@@ -47,9 +47,9 @@ class OMNI_PT_PreferencesPanel(Panel):
         layout.prop(prefs, "use_shadow_catcher", text="Set Mesh as Shadow Catcher")
         layout.prop(prefs, "use_holdout", text="Set Mesh as Holdout")
 
-class OMNI_PT_ObjectsPanel(Panel):
-    bl_label = "Imported Objects"
-    bl_idname = "OMNI_PT_objects"
+class OMNI_PT_ShotsPanel(Panel):
+    bl_label = "Shots"
+    bl_idname = "OMNI_PT_shots"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Omniscient'
@@ -61,19 +61,12 @@ class OMNI_PT_ObjectsPanel(Panel):
         scene = context.scene
 
         row = layout.row()
-        row.prop(scene, "Camera_Omni", text="Camera")
-        
-        row = layout.row()
-        row.prop(scene, "Scan_Omni", text="Scan")
-
-        row = layout.row()
         row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
 
-        row = layout.row()
+        row = layout.row(align=True)
         row.operator("object.switch_shot", text="Switch Shot")
-
-        row = layout.row()
-        row.prop(scene, "auto_switch_shot", text="Auto Switch Shot")
+        row.separator(factor=0.5)
+        row.prop(scene, "auto_switch_shot", text="Auto", toggle=True)
 
         # Add the list UI
         layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
