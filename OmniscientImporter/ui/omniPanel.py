@@ -1,6 +1,16 @@
 import bpy
 from bpy.types import Panel, Operator
 
+bpy.types.Scene.Active_Camera_Name = bpy.props.StringProperty(name="Active Camera Name", default="None")
+
+def update_active_camera(scene, depsgraph):
+    active_camera = scene.camera
+    if active_camera:
+        scene.Active_Camera_Name = active_camera.name
+    else:
+        scene.Active_Camera_Name = "None"
+
+# Panels for Omniscient add-on
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
     bl_idname = "OMNI_PT_import"
@@ -10,10 +20,7 @@ class OMNI_PT_ImportPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
-
-        # Add import button
         layout.operator("load.omni", text="Import .omni")
-
 
 class OMNI_PT_PreferencesPanel(Panel):
     bl_label = "Import Preferences"
@@ -46,23 +53,22 @@ class OMNI_PT_ObjectsPanel(Panel):
         scene = context.scene
 
         row = layout.row()
-        row.prop(context.scene, "Camera_Omni", text="Camera")
+        row.prop(scene, "Camera_Omni", text="Camera")
         
         row = layout.row()
-        row.prop(context.scene, "Scan_Omni", text="Scan")
+        row.prop(scene, "Scan_Omni", text="Scan")
 
+        row = layout.row()
+        row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
 
-class OMNI_OT_ScanOmni(Operator):
-    bl_idname = "scan.omni"
-    bl_label = "Scan Omni"
-    bl_description = "Perform a scan using the Omni"
-
+class OMNI_OT_UpdateActiveCamera(Operator):
+    bl_idname = "object.update_active_camera"
+    bl_label = "Update Active Camera"
+    
     def execute(self, context):
-        # Add the scan functionality here
-        self.report({'INFO'}, "Scan Omni executed")
+        update_active_camera(context.scene, context.depsgraph)
         return {'FINISHED'}
 
-# Ensure you add the new property to the scene
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
         name="Camera_Omni",
@@ -72,7 +78,13 @@ def register():
         name="Scan_Omni",
         type=bpy.types.Object
     )
-
+    
+    # Callback to run the update function when the active camera changes
+    bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
+    
 def unregister():
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
+    del bpy.types.Scene.Active_Camera_Name
+    
+    bpy.app.handlers.depsgraph_update_post.remove(update_active_camera)
