@@ -15,6 +15,7 @@ class OmniShot(PropertyGroup):
     fps: bpy.props.FloatProperty(name="FPS", default=24.0)
     frame_start: bpy.props.IntProperty(name="Start Frame", default=1)
     frame_end: bpy.props.IntProperty(name="End Frame", default=250)
+    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
 
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
@@ -105,7 +106,14 @@ class OMNI_OT_SwitchShot(Operator):
             scene.frame_end = shot.frame_end
             scene.render.fps = int(shot.fps)  # Convert fps to int
             adjust_timeline_view(context, shot.frame_start, shot.frame_end)
+            if shot.collection:
+                hide_all_collections()
+                shot.collection.hide_viewport = False
         return {'FINISHED'}
+
+def hide_all_collections():
+    for collection in bpy.data.collections:
+        collection.hide_viewport = True
 
 def adjust_timeline_view(context, frame_start, frame_end):
     # Set the preview range
