@@ -190,6 +190,9 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     hide_omniscient_collections(bpy.context.scene)
     omniscient_collection.hide_viewport = False
 
+    # Auto-select the imported shot
+    bpy.context.scene.Selected_Shot_Index = len(bpy.context.scene.Omni_Shots) - 1
+
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
