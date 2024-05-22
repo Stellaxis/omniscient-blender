@@ -69,6 +69,9 @@ class OMNI_PT_ObjectsPanel(Panel):
         row = layout.row()
         row.operator("object.switch_shot", text="Switch Shot")
 
+        row = layout.row()
+        row.prop(scene, "auto_switch_shot", text="Auto Switch Shot")
+
         # Add the list UI
         layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
 
@@ -81,6 +84,13 @@ class OMNI_UL_ShotList(UIList):
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
+
+    def invoke(self, context, event):
+        # Switch shot when an item is selected
+        scene = context.scene
+        if scene.auto_switch_shot:
+            bpy.ops.object.switch_shot()
+        return super().invoke(context, event)
 
 class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
@@ -95,7 +105,22 @@ class OMNI_OT_SwitchShot(Operator):
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
             scene.render.fps = int(shot.fps)  # Convert fps to int
+            adjust_timeline_view(context)
         return {'FINISHED'}
+
+def adjust_timeline_view(context):
+    for area in context.screen.areas:
+        if area.type == 'DOPESHEET_EDITOR': 
+            override = context.copy()
+            override["area"] = area
+            override["region"] = area.regions[-1]
+            with context.temp_override(**override):
+                bpy.ops.action.view_all()
+            break
+
+def selected_shot_index_update(self, context):
+    if context.scene.auto_switch_shot:
+        bpy.ops.object.switch_shot()
 
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
@@ -108,8 +133,17 @@ def register():
     )
     
     bpy.types.Scene.Active_Camera_Name = bpy.props.StringProperty(name="Active Camera Name", default="None")
-    bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(name="Selected Shot Index", default=0)
+    bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(
+        name="Selected Shot Index", 
+        default=0,
+        update=selected_shot_index_update
+    )
     bpy.types.Scene.Omni_Shots = bpy.props.CollectionProperty(type=OmniShot)
+    bpy.types.Scene.auto_switch_shot = bpy.props.BoolProperty(
+        name="Auto Switch Shot",
+        description="Automatically switch shot when selecting an OmniShot",
+        default=False
+    )
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
 
@@ -119,5 +153,6 @@ def unregister():
     del bpy.types.Scene.Active_Camera_Name
     del bpy.types.Scene.Omni_Shots
     del bpy.types.Scene.Selected_Shot_Index
+    del bpy.types.Scene.auto_switch_shot
 
     bpy.app.handlers.depsgraph_update_post.remove(update_active_camera)
