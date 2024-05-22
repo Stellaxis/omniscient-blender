@@ -17,6 +17,9 @@ class OmniShot(PropertyGroup):
     frame_end: bpy.props.IntProperty(name="End Frame", default=250)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
 
+class OmniCollection(PropertyGroup):
+    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
     bl_idname = "OMNI_PT_import"
@@ -81,9 +84,28 @@ class OMNI_UL_ShotList(UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             layout.prop(shot, "name", text="", emboss=False)
             layout.label(text=f"Camera: {shot.camera.name if shot.camera else 'None'}")
+            layout.label(text=f"Collection: {shot.collection.name if shot.collection else 'None'}")
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
+
+    def draw_filter(self, context, layout):
+        layout.label(text="Filter by Scene")
+
+    def filter_items(self, context, data, property):
+        flt_flags = []
+        flt_neworder = []
+        
+        shots = getattr(data, property)
+        scenes = sorted({shot.collection.name for shot in shots if shot.collection})
+        
+        for shot in shots:
+            if shot.collection and shot.collection.name in scenes:
+                flt_flags.append(self.bitflag_filter_item)
+            else:
+                flt_flags.append(0)
+
+        return flt_flags, flt_neworder
 
     def invoke(self, context, event):
         # Switch shot when an item is selected
@@ -107,13 +129,14 @@ class OMNI_OT_SwitchShot(Operator):
             scene.render.fps = int(shot.fps)  # Convert fps to int
             adjust_timeline_view(context, shot.frame_start, shot.frame_end)
             if shot.collection:
-                hide_all_collections()
+                hide_omniscient_collections(scene)
                 shot.collection.hide_viewport = False
         return {'FINISHED'}
 
-def hide_all_collections():
-    for collection in bpy.data.collections:
-        collection.hide_viewport = True
+def hide_omniscient_collections(scene):
+    for omni_collection in scene.Omni_Collections:
+        if omni_collection.collection:
+            omni_collection.collection.hide_viewport = True
 
 def adjust_timeline_view(context, frame_start, frame_end):
     # Set the preview range
@@ -157,6 +180,7 @@ def register():
         description="Automatically switch shot when selecting an OmniShot",
         default=True
     )
+    bpy.types.Scene.Omni_Collections = bpy.props.CollectionProperty(type=OmniCollection)
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
 
@@ -167,5 +191,6 @@ def unregister():
     del bpy.types.Scene.Omni_Shots
     del bpy.types.Scene.Selected_Shot_Index
     del bpy.types.Scene.auto_switch_shot
+    del bpy.types.Scene.Omni_Collections
 
     bpy.app.handlers.depsgraph_update_post.remove(update_active_camera)

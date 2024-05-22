@@ -36,6 +36,11 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             coll.objects.unlink(obj)
         collection.objects.link(obj)
 
+    def hide_omniscient_collections(scene):
+        for omni_collection in scene.Omni_Collections:
+            if omni_collection.collection:
+                omni_collection.collection.hide_viewport = True
+
     # If a matching mesh exists, skip importing the mesh and just import the camera
     imported_mesh = None
     if existing_omniscient_collection is None:
@@ -178,6 +183,12 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     shot.frame_start = 1
     shot.frame_end = frame_duration
     shot.collection = omniscient_collection
+
+    omni_collection = bpy.context.scene.Omni_Collections.add()
+    omni_collection.collection = omniscient_collection
+
+    hide_omniscient_collections(bpy.context.scene)
+    omniscient_collection.hide_viewport = False
 
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
