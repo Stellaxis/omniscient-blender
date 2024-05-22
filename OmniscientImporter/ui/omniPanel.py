@@ -50,7 +50,6 @@ class OMNI_PT_ObjectsPanel(Panel):
     bl_region_type = 'UI'
     bl_category = 'Omniscient'
     bl_parent_id = "OMNI_PT_import"
-    bl_options = {'DEFAULT_CLOSED'}
     bl_order = 1
 
     def draw(self, context):
@@ -148,7 +147,7 @@ def register():
     bpy.types.Scene.auto_switch_shot = bpy.props.BoolProperty(
         name="Auto Switch Shot",
         description="Automatically switch shot when selecting an OmniShot",
-        default=False
+        default=True
     )
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
