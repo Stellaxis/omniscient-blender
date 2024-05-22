@@ -67,12 +67,6 @@ class OMNI_PT_ObjectsPanel(Panel):
         row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
 
         row = layout.row()
-        row.prop(scene, "Selected_Shot_Index", text="Selected Shot")
-
-        row = layout.row()
-        row.operator("object.update_active_camera", text="Update Active Camera")
-
-        row = layout.row()
         row.operator("object.switch_shot", text="Switch Shot")
 
         # Add the list UI
@@ -87,14 +81,6 @@ class OMNI_UL_ShotList(UIList):
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
-
-class OMNI_OT_UpdateActiveCamera(Operator):
-    bl_idname = "object.update_active_camera"
-    bl_label = "Update Active Camera"
-    
-    def execute(self, context):
-        update_active_camera(context.scene, bpy.context.evaluated_depsgraph_get())
-        return {'FINISHED'}
 
 class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
