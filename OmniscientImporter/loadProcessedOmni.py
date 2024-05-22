@@ -13,8 +13,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     def names_match(name1, name2):
         return name1.split('.')[0] == name2.split('.')[0]
 
-    # Create or get the "Omniscient" collection in the current scene
-    collection_name = "Omniscient"
+    # Create or get the "Scene_Omni" collection in the current scene
+    collection_name = "Scene_Omni"
     existing_omniscient_collection = None
     for coll in bpy.context.scene.collection.children:
         if coll.name.startswith(collection_name):
@@ -177,6 +177,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     shot.fps = clip_fps
     shot.frame_start = 1
     shot.frame_end = frame_duration
+    shot.collection = omniscient_collection
 
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
