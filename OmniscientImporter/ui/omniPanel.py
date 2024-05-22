@@ -1,7 +1,5 @@
 import bpy
-from bpy.types import Panel, Operator
-
-bpy.types.Scene.Active_Camera_Name = bpy.props.StringProperty(name="Active Camera Name", default="None")
+from bpy.types import Panel, Operator, PropertyGroup, UIList
 
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
@@ -10,7 +8,14 @@ def update_active_camera(scene, depsgraph):
     else:
         scene.Active_Camera_Name = "None"
 
-# Panels for Omniscient add-on
+class OmniShot(PropertyGroup):
+    camera: bpy.props.PointerProperty(type=bpy.types.Object)
+    mesh: bpy.props.PointerProperty(type=bpy.types.Object)
+    video: bpy.props.PointerProperty(type=bpy.types.Image)
+    fps: bpy.props.FloatProperty(name="FPS", default=24.0)
+    frame_start: bpy.props.IntProperty(name="Start Frame", default=1)
+    frame_end: bpy.props.IntProperty(name="End Frame", default=250)
+
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
     bl_idname = "OMNI_PT_import"
@@ -61,12 +66,49 @@ class OMNI_PT_ObjectsPanel(Panel):
         row = layout.row()
         row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
 
+        row = layout.row()
+        row.prop(scene, "Selected_Shot_Index", text="Selected Shot")
+
+        row = layout.row()
+        row.operator("object.update_active_camera", text="Update Active Camera")
+
+        row = layout.row()
+        row.operator("object.switch_shot", text="Switch Shot")
+
+        # Add the list UI
+        layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
+
+class OMNI_UL_ShotList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
+        shot = item
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            layout.prop(shot, "name", text="", emboss=False)
+            layout.label(text=f"Camera: {shot.camera.name if shot.camera else 'None'}")
+        elif self.layout_type in {'GRID'}:
+            layout.alignment = 'CENTER'
+            layout.label(text="", icon_value=icon)
+
 class OMNI_OT_UpdateActiveCamera(Operator):
     bl_idname = "object.update_active_camera"
     bl_label = "Update Active Camera"
     
     def execute(self, context):
-        update_active_camera(context.scene, context.depsgraph)
+        update_active_camera(context.scene, bpy.context.evaluated_depsgraph_get())
+        return {'FINISHED'}
+
+class OMNI_OT_SwitchShot(Operator):
+    bl_idname = "object.switch_shot"
+    bl_label = "Switch Shot"
+
+    def execute(self, context):
+        scene = context.scene
+        shot_index = scene.Selected_Shot_Index
+        if shot_index < len(scene.Omni_Shots):
+            shot = scene.Omni_Shots[shot_index]
+            scene.camera = shot.camera
+            scene.frame_start = shot.frame_start
+            scene.frame_end = shot.frame_end
+            scene.render.fps = int(shot.fps)  # Convert fps to int
         return {'FINISHED'}
 
 def register():
@@ -79,12 +121,17 @@ def register():
         type=bpy.types.Object
     )
     
-    # Callback to run the update function when the active camera changes
+    bpy.types.Scene.Active_Camera_Name = bpy.props.StringProperty(name="Active Camera Name", default="None")
+    bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(name="Selected Shot Index", default=0)
+    bpy.types.Scene.Omni_Shots = bpy.props.CollectionProperty(type=OmniShot)
+
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
-    
+
 def unregister():
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
     del bpy.types.Scene.Active_Camera_Name
-    
+    del bpy.types.Scene.Omni_Shots
+    del bpy.types.Scene.Selected_Shot_Index
+
     bpy.app.handlers.depsgraph_update_post.remove(update_active_camera)

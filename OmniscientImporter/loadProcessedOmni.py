@@ -168,6 +168,16 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     showTextPopup("Success!")
 
+    # Store the shot settings
+    shot = bpy.context.scene.Omni_Shots.add()
+    shot.name = base_name
+    shot.camera = imported_cam
+    shot.mesh = imported_mesh
+    shot.video = img
+    shot.fps = clip_fps
+    shot.frame_start = 1
+    shot.frame_end = frame_duration
+
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
