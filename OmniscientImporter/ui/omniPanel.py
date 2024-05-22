@@ -105,12 +105,18 @@ class OMNI_OT_SwitchShot(Operator):
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
             scene.render.fps = int(shot.fps)  # Convert fps to int
-            adjust_timeline_view(context)
+            adjust_timeline_view(context, shot.frame_start, shot.frame_end)
         return {'FINISHED'}
 
-def adjust_timeline_view(context):
+def adjust_timeline_view(context, frame_start, frame_end):
+    # Set the preview range
+    context.scene.use_preview_range = True
+    context.scene.frame_preview_start = frame_start
+    context.scene.frame_preview_end = frame_end
+
+    # Adjust the timeline view to fit the entire preview range
     for area in context.screen.areas:
-        if area.type == 'DOPESHEET_EDITOR': 
+        if area.type == 'DOPESHEET_EDITOR':
             override = context.copy()
             override["area"] = area
             override["region"] = area.regions[-1]
