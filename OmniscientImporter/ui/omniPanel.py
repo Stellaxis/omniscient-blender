@@ -1,7 +1,9 @@
 import bpy
+from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..setupCompositingNodes import setup_compositing_nodes
 
+@persistent
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
     if active_camera:
