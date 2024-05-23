@@ -6,6 +6,15 @@ def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
     if active_camera:
         scene.Active_Camera_Name = active_camera.name
+        current_index = scene.Selected_Shot_Index
+        current_shot_camera = scene.Omni_Shots[current_index].camera if current_index < len(scene.Omni_Shots) else None
+
+        if active_camera != current_shot_camera:
+            for index, shot in enumerate(scene.Omni_Shots):
+                if shot.camera == active_camera:
+                    scene.Selected_Shot_Index = index
+                    bpy.ops.object.switch_shot()
+                    break
     else:
         scene.Active_Camera_Name = "None"
 
@@ -143,7 +152,9 @@ def adjust_timeline_view(context, frame_start, frame_end):
             break
 
 def selected_shot_index_update(self, context):
-    bpy.ops.object.switch_shot()
+    current_shot = context.scene.Omni_Shots[context.scene.Selected_Shot_Index]
+    if context.scene.camera != current_shot.camera:
+        bpy.ops.object.switch_shot()
 
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
