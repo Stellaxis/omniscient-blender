@@ -72,9 +72,6 @@ class OMNI_PT_ShotsPanel(Panel):
         layout = self.layout
         scene = context.scene
 
-        row = layout.row()
-        row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
-
         # Add the list UI
         layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
 
@@ -82,9 +79,9 @@ class OMNI_UL_ShotList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
         shot = item
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            layout.prop(shot, "name", text="", emboss=False)
-            layout.label(text=f"Camera: {shot.camera.name if shot.camera else 'None'}")
-            layout.label(text=f"Collection: {shot.collection.name if shot.collection else 'None'}")
+            row = layout.row(align=True)
+            row.prop(shot, "name", text="", emboss=False)
+            row.label(text=f" {shot.collection.name if shot.collection else 'None'}")
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)

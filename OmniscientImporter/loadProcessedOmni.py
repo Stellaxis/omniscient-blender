@@ -175,7 +175,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     # Store the shot settings
     shot = bpy.context.scene.Omni_Shots.add()
-    shot.name = base_name
     shot.camera = imported_cam
     shot.mesh = imported_mesh
     shot.video = img
@@ -184,14 +183,19 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     shot.frame_end = frame_duration
     shot.collection = omniscient_collection
 
+    # Assign a default name to the shot
+    shot_index = len(bpy.context.scene.Omni_Shots) - 1
+    shot.name = f"Shot {shot_index + 1:02d}"
+
+    # Auto-select the imported shot
+    bpy.context.scene.Selected_Shot_Index = shot_index
+    
     omni_collection = bpy.context.scene.Omni_Collections.add()
     omni_collection.collection = omniscient_collection
 
     hide_omniscient_collections(bpy.context.scene)
     omniscient_collection.hide_viewport = False
 
-    # Auto-select the imported shot
-    bpy.context.scene.Selected_Shot_Index = len(bpy.context.scene.Omni_Shots) - 1
 
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
