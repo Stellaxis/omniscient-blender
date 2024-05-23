@@ -3,8 +3,14 @@ from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..setupCompositingNodes import setup_compositing_nodes
 
+is_switching_shot = False
+
 @persistent
 def update_active_camera(scene, depsgraph):
+    global is_switching_shot
+    if is_switching_shot:
+        return
+
     active_camera = scene.camera
     if active_camera:
         scene.Active_Camera_Name = active_camera.name
@@ -14,8 +20,12 @@ def update_active_camera(scene, depsgraph):
         if active_camera != current_shot_camera:
             for index, shot in enumerate(scene.Omni_Shots):
                 if shot.camera == active_camera:
-                    scene.Selected_Shot_Index = index
-                    bpy.ops.object.switch_shot()
+                    if scene.Selected_Shot_Index != index:
+                        scene['prevent_recursion'] = True  # Prevent recursion
+                        scene.Selected_Shot_Index = index
+                        print(f"update_active_camera: Setting Selected_Shot_Index to {index}")
+                        bpy.ops.object.switch_shot(index=index)
+                        scene['prevent_recursion'] = False  # Reset flag
                     break
     else:
         scene.Active_Camera_Name = "None"
@@ -112,9 +122,16 @@ class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
     bl_label = "Switch Shot"
 
+    index: bpy.props.IntProperty()
+
     def execute(self, context):
+        global is_switching_shot
+        if is_switching_shot:
+            return {'CANCELLED'}
+        
+        is_switching_shot = True
         scene = context.scene
-        shot_index = scene.Selected_Shot_Index
+        shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
         if shot_index < len(scene.Omni_Shots):
             shot = scene.Omni_Shots[shot_index]
             scene.camera = shot.camera
@@ -127,6 +144,8 @@ class OMNI_OT_SwitchShot(Operator):
                 shot.collection.hide_viewport = False
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
+        print(f"Switched to shot index: {shot_index} (should be {shot_index})")
+        is_switching_shot = False
         return {'FINISHED'}
 
 def hide_omniscient_collections(scene):
@@ -151,9 +170,15 @@ def adjust_timeline_view(context, frame_start, frame_end):
             break
 
 def selected_shot_index_update(self, context):
-    current_shot = context.scene.Omni_Shots[context.scene.Selected_Shot_Index]
+    if context.scene.get('prevent_recursion', False):
+        return
+
+    current_index = context.scene.Selected_Shot_Index
+    current_shot = context.scene.Omni_Shots[current_index]
+    
     if context.scene.camera != current_shot.camera:
-        bpy.ops.object.switch_shot()
+        print(f"selected_shot_index_update: {current_index}")
+        bpy.ops.object.switch_shot(index=current_index)
 
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
