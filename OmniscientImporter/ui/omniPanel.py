@@ -1,5 +1,6 @@
 import bpy
 from bpy.types import Panel, Operator, PropertyGroup, UIList
+from ..setupCompositingNodes import setup_compositing_nodes
 
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
@@ -116,6 +117,8 @@ class OMNI_OT_SwitchShot(Operator):
             if shot.collection:
                 hide_omniscient_collections(scene)
                 shot.collection.hide_viewport = False
+            # Update compositing nodes with the correct image
+            setup_compositing_nodes(shot.video)
         return {'FINISHED'}
 
 def hide_omniscient_collections(scene):
