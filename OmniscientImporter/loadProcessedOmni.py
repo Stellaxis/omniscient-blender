@@ -188,11 +188,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     shot.name = f"Shot {shot_index + 1:02d}"
 
     # Auto-select the imported shot
-    bpy.context.scene['prevent_recursion'] = True  # Set flag to prevent recursion
-    print(f"Setting Selected_Shot_Index to {shot_index}")
     bpy.context.scene.Selected_Shot_Index = shot_index
-    bpy.context.scene['prevent_recursion'] = False  # Reset flag
-    print(f"Selected_Shot_Index set to: {shot_index}")
 
     omni_collection = bpy.context.scene.Omni_Collections.add()
     omni_collection.collection = omniscient_collection
