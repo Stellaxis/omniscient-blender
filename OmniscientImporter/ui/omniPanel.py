@@ -128,6 +128,7 @@ class OMNI_OT_SwitchShot(Operator):
             if shot.collection:
                 hide_omniscient_collections(scene)
                 shot.collection.hide_viewport = False
+                shot.collection.hide_render = False
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
@@ -136,6 +137,7 @@ def hide_omniscient_collections(scene):
     for omni_collection in scene.Omni_Collections:
         if omni_collection.collection:
             omni_collection.collection.hide_viewport = True
+            omni_collection.collection.hide_render = True
 
 def adjust_timeline_view(context, frame_start, frame_end):
     # Set the preview range
