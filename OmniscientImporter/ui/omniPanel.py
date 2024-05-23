@@ -3,7 +3,7 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
-    if (active_camera):
+    if active_camera:
         scene.Active_Camera_Name = active_camera.name
     else:
         scene.Active_Camera_Name = "None"
@@ -63,11 +63,6 @@ class OMNI_PT_ShotsPanel(Panel):
         row = layout.row()
         row.label(text=f"Active Camera: {scene.Active_Camera_Name}")
 
-        row = layout.row(align=True)
-        row.operator("object.switch_shot", text="Switch Shot")
-        row.separator(factor=0.5)
-        row.prop(scene, "auto_switch_shot", text="Auto", toggle=True)
-
         # Add the list UI
         layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
 
@@ -101,10 +96,7 @@ class OMNI_UL_ShotList(UIList):
         return flt_flags, flt_neworder
 
     def invoke(self, context, event):
-        # Switch shot when an item is selected
-        scene = context.scene
-        if scene.auto_switch_shot:
-            bpy.ops.object.switch_shot()
+        bpy.ops.object.switch_shot()
         return super().invoke(context, event)
 
 class OMNI_OT_SwitchShot(Operator):
@@ -148,8 +140,7 @@ def adjust_timeline_view(context, frame_start, frame_end):
             break
 
 def selected_shot_index_update(self, context):
-    if context.scene.auto_switch_shot:
-        bpy.ops.object.switch_shot()
+    bpy.ops.object.switch_shot()
 
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
