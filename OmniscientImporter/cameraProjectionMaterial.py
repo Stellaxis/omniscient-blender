@@ -4,54 +4,66 @@ from bpy.app import version
 def is_blender_4():
     return version >= (4, 0, 0)
 
-def create_projection_shader(material_name, image_name, camera):
-    # Create a new material
-    material = bpy.data.materials.new(name=material_name)
+def create_projection_shader(material_name, new_image_name, new_camera):
+    # Get or create a new material
+    material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
     material.use_nodes = True
     nodes = material.node_tree.nodes
 
-    # Clear existing nodes
-    nodes.clear()
+    # Ensure the material uses nodes
+    if not material.use_nodes:
+        material.use_nodes = True
 
-    # Create main nodes
+    # Calculate the vertical spacing
+    vertical_spacing = 400.0
+
+    # Create a principled BSDF node if it doesn't exist
+    principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
+    if not principled_bsdf_node:
+        principled_bsdf_node = nodes.new(type='ShaderNodeBsdfPrincipled')
+        principled_bsdf_node.location = (400.0, 0.0)
+        principled_bsdf_node.inputs['Metallic'].default_value = 0.5
+        principled_bsdf_node.inputs['Roughness'].default_value = 0.8
+
+    # Create a material output node if it doesn't exist
+    output_node = next((node for node in nodes if node.type == 'OUTPUT_MATERIAL'), None)
+    if not output_node:
+        output_node = nodes.new(type='ShaderNodeOutputMaterial')
+        output_node.location = (600.0, 0.0)
+
+    # Find existing texture coordinate and image texture nodes
+    existing_image_nodes = [node for node in nodes if node.type == 'TEX_IMAGE']
+    previous_image_node = existing_image_nodes[0] if existing_image_nodes else None
+    previous_mix_node = None
+    existing_mix_nodes = [node for node in nodes if node.type == 'MIX_RGB']
+    if existing_mix_nodes:
+        previous_mix_node = existing_mix_nodes[-1]
+
+    # Create new texture coordinate node for the new camera
     tex_coord_node = nodes.new("ShaderNodeTexCoord")
-    tex_coord_node.location = (-1100.0, 100.0)
+    tex_coord_node.location = (-1200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     tex_coord_node.width = 170.8
-    tex_coord_node.object = camera
+    tex_coord_node.object = new_camera
 
-    # Create image texture node
-    image_texture_node = nodes.new("ShaderNodeTexImage")
-    image_texture_node.location = (-420.0, 200.0)
-    image_texture_node.width = 240.0
-    image_texture_node.image = bpy.data.images.get(image_name)
-    image_texture_node.projection = 'FLAT'
-    image_texture_node.interpolation = 'Linear'
-    image_texture_node.extension = 'CLIP'
-    image_texture_node.image_user.use_auto_refresh = True
+    # Create new image texture node for the new image
+    new_image_texture_node = nodes.new("ShaderNodeTexImage")
+    new_image_texture_node.location = (-600.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+    new_image_texture_node.width = 240.0
+    new_image_texture_node.image = bpy.data.images.get(new_image_name)
+    new_image_texture_node.projection = 'FLAT'
+    new_image_texture_node.interpolation = 'Linear'
+    new_image_texture_node.extension = 'CLIP'
+    new_image_texture_node.image_user.use_auto_refresh = True
     scene = bpy.context.scene
-    image_texture_node.image_user.frame_start = scene.frame_start
-    image_texture_node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
+    new_image_texture_node.image_user.frame_start = scene.frame_start
+    new_image_texture_node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
 
-    # Create Principled BSDF node
-    principled_bsdf_node = nodes.new("ShaderNodeBsdfPrincipled")
-    principled_bsdf_node.location = (-100.0, 200.0)
-    principled_bsdf_node.width = 240.0
-    principled_bsdf_node.inputs['Metallic'].default_value = 0.5
-    principled_bsdf_node.inputs['Roughness'].default_value = 0.8
-
-    output_node = nodes.new("ShaderNodeOutputMaterial")
-    output_node.location = (200.0, 200.0)
-    output_node.width = 140.0
-    output_node.is_active_output = True
-    output_node.target = 'ALL'
-
-    # Create or reuse the Camera Projector node group
+    # Check if the Camera Projector group already exists
     node_group_name = "CameraProjector_Omni"
     if node_group_name in bpy.data.node_groups:
         node_group = bpy.data.node_groups[node_group_name]
     else:
         node_group = bpy.data.node_groups.new(name=node_group_name, type='ShaderNodeTree')
-
         # Function to create nodes inside the node group
         def create_node_in_group(node_tree, node_type, name, location, **kwargs):
             node = node_tree.nodes.new(type=node_type)
@@ -146,13 +158,13 @@ def create_projection_shader(material_name, image_name, camera):
             var.targets[0].data_path = data_path
             driver.expression = var.name
 
-        if camera:
-            add_camera_driver(focal_length_node.outputs[0], camera, "data.lens")
-            add_camera_driver(sensor_size_node.outputs[0], camera, "data.sensor_width")
+        if new_camera:
+            add_camera_driver(focal_length_node.outputs[0], new_camera, "data.lens")
+            add_camera_driver(sensor_size_node.outputs[0], new_camera, "data.sensor_width")
 
     # Create the node group in the new material
     camera_projector_group_node = nodes.new("ShaderNodeGroup")
-    camera_projector_group_node.location = (-820.0, 60.0)
+    camera_projector_group_node.location = (-1000.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     camera_projector_group_node.width = 166.7
     camera_projector_group_node.label = 'Camera Projector Omni'
     camera_projector_group_node.node_tree = node_group
@@ -165,8 +177,35 @@ def create_projection_shader(material_name, image_name, camera):
                 print(f"Failed to create link: {from_node.name} [{from_socket}] -> {to_node.name} [{to_socket}]. Error: {e}")
 
     create_link(material.node_tree, tex_coord_node, 3, camera_projector_group_node, 0)
-    create_link(material.node_tree, camera_projector_group_node, 0, image_texture_node, 0)
-    create_link(material.node_tree, image_texture_node, 0, principled_bsdf_node, 0)
+    create_link(material.node_tree, camera_projector_group_node, 0, new_image_texture_node, 0)
+
+    # Create a mix RGB node if there's an existing image texture node
+    if previous_image_node or previous_mix_node:
+        new_mix_node = nodes.new("ShaderNodeMixRGB")
+        new_mix_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1) + vertical_spacing / 2)
+        new_mix_node.blend_type = 'MIX'
+        new_mix_node.inputs[0].default_value = 0.5  # Adjust blend factor as needed
+
+        if previous_mix_node:
+            create_link(material.node_tree, previous_mix_node, 0, new_mix_node, 1)
+        else:
+            create_link(material.node_tree, previous_image_node, 0, new_mix_node, 1)
+
+        create_link(material.node_tree, new_image_texture_node, 0, new_mix_node, 2)
+        create_link(material.node_tree, new_image_texture_node, 1, new_mix_node, 0)  # Connect alpha to mix shader
+
+        previous_mix_node = new_mix_node
+        create_link(material.node_tree, previous_mix_node, 0, principled_bsdf_node, 0)
+    else:
+        create_link(material.node_tree, new_image_texture_node, 0, principled_bsdf_node, 0)
+
+    # Position the BSDF and Output nodes in between the rows
+    total_rows = len(existing_image_nodes) + 2
+    bsdf_vertical_position = -vertical_spacing * total_rows / 2
+
+    principled_bsdf_node.location.y = bsdf_vertical_position
+    output_node.location.y = bsdf_vertical_position
+
     create_link(material.node_tree, principled_bsdf_node, 0, output_node, 0)
 
     # Function to hide (collapse) specific nodes in a node tree
