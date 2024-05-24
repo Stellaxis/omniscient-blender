@@ -104,6 +104,8 @@ class OMNI_UL_ShotList(UIList):
             row = layout.row(align=True)
             row.prop(shot, "name", text="", emboss=False)
             row.label(text=f" {shot.collection.name if shot.collection else 'None'}")
+            
+            row.operator("object.delete_shot", text="", icon='X').index = index
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
@@ -165,6 +167,33 @@ class OMNI_OT_SwitchShot(Operator):
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
+
+class OMNI_OT_DeleteShot(Operator):
+    bl_idname = "object.delete_shot"
+    bl_label = "Delete Shot"
+
+    index: bpy.props.IntProperty()
+
+    def execute(self, context):
+        scene = context.scene
+        if 0 <= self.index < len(scene.Omni_Shots):
+            shot = scene.Omni_Shots[self.index]
+
+            # Unlink camera from scene and collection
+            if shot.camera:
+                for coll in shot.camera.users_collection:
+                    coll.objects.unlink(shot.camera)
+                bpy.data.objects.remove(shot.camera)
+
+            # Remove the shot
+            scene.Omni_Shots.remove(self.index)
+
+            # Adjust the selected index
+            if self.index == scene.Selected_Shot_Index:
+                scene.Selected_Shot_Index = min(self.index, len(scene.Omni_Shots) - 1)
+
+            return {'FINISHED'}
+        return {'CANCELLED'}
 
 def hide_omniscient_collections(scene):
     for omni_collection in scene.Omni_Collections:
