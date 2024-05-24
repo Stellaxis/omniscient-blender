@@ -23,7 +23,6 @@ class OMNI_Preferences(AddonPreferences):
         items=[
             ('CYCLES', "Cycles (recommended)", "Use Cycles renderer"),
             ('BLENDER_EEVEE', "Eevee", "Use Eevee renderer"),
-            ('WORKBENCH', "Workbench", "Use Workbench renderer")
         ],
         default='CYCLES'
     )
@@ -50,10 +49,10 @@ class OMNI_Preferences(AddonPreferences):
         box.prop(self, "use_holdout")
 
         # Renderer Option
-        layout.separator()
-        layout.label(text="Renderer Settings", icon='RENDER_STILL')
-        layout.prop(self, "renderer")
+        box = layout.box()
+        box.label(text="Renderer Settings", icon='RENDER_STILL')
 
+        box.prop(self, "renderer")
         # Motion Blur and Depth of Field Options
-        layout.prop(self, "enable_motion_blur")
-        layout.prop(self, "enable_dof")
+        box.prop(self, "enable_motion_blur")
+        box.prop(self, "enable_dof")
