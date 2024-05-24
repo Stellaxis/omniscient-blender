@@ -1,4 +1,8 @@
 import bpy
+from bpy.app import version
+
+def is_blender_4():
+    return version >= (4, 0, 0)
 
 def create_projection_shader(material_name, image_name, camera):
     # Create a new material
@@ -26,7 +30,7 @@ def create_projection_shader(material_name, image_name, camera):
     image_texture_node.image_user.use_auto_refresh = True
     scene = bpy.context.scene
     image_texture_node.image_user.frame_start = scene.frame_start
-    image_texture_node.image_user.frame_duration = scene.frame_end
+    image_texture_node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
 
     emission_node = nodes.new("ShaderNodeEmission")
     emission_node.location = (-100.0, 200.0)
@@ -59,8 +63,12 @@ def create_projection_shader(material_name, image_name, camera):
         group_output_node = create_node_in_group(node_group, "NodeGroupOutput", "Group Output", (720.0, -20.0), is_active_output=True)
 
         # Adding vector input and output sockets
-        node_group.interface.new_socket(name="Vector Input", in_out='INPUT')
-        node_group.interface.new_socket(name="Vector Output", in_out='OUTPUT')
+        if is_blender_4():
+            node_group.interface.new_socket(name="Vector Input", in_out='INPUT')
+            node_group.interface.new_socket(name="Vector Output", in_out='OUTPUT')
+        else:
+            node_group.inputs.new(name="Vector Input", type='NodeSocketVector')
+            node_group.outputs.new(name="Vector Output", type='NodeSocketVector')
 
         separate_xyz_node = create_node_in_group(node_group, "ShaderNodeSeparateXYZ", "Separate XYZ", (-860.0, 100.0))
         combine_xyz_node = create_node_in_group(node_group, "ShaderNodeCombineXYZ", "Combine XYZ", (-40.0, 0.0))
