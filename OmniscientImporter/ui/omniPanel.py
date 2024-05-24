@@ -65,8 +65,21 @@ class OMNI_PT_PreferencesPanel(Panel):
     def draw(self, context):
         layout = self.layout
         prefs = context.preferences.addons['OmniscientImporter'].preferences
-        layout.prop(prefs, "use_shadow_catcher", text="Set Mesh as Shadow Catcher")
-        layout.prop(prefs, "use_holdout", text="Set Mesh as Holdout")
+
+        # Import Options Panel
+        box = layout.box()
+        box.label(text="Import Options", icon='IMPORT')
+        box.prop(prefs, "use_shadow_catcher")
+        box.prop(prefs, "use_holdout")
+
+        # Renderer Option
+        layout.separator()
+        layout.label(text="Renderer Settings", icon='RENDER_STILL')
+        layout.prop(prefs, "renderer")
+
+        # Motion Blur and Depth of Field Options
+        layout.prop(prefs, "enable_motion_blur")
+        layout.prop(prefs, "enable_dof")
 
 class OMNI_PT_ShotsPanel(Panel):
     bl_label = "Shots"
