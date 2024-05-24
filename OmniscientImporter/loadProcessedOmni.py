@@ -152,7 +152,8 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         bpy.context.scene.Scan_Omni = imported_mesh
         if prefs.use_shadow_catcher:
             imported_mesh.is_shadow_catcher = True
-        if prefs.use_holdout:
+            imported_mesh.is_holdout = False  # Ensure holdout is disabled if shadow catcher is enabled
+        elif prefs.use_holdout:
             imported_mesh.is_holdout = True 
         
         # Assign the material to the imported mesh
