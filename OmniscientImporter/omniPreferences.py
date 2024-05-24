@@ -51,8 +51,12 @@ class OMNI_Preferences(AddonPreferences):
         # Renderer Option
         box = layout.box()
         box.label(text="Renderer Settings", icon='RENDER_STILL')
-
         box.prop(self, "renderer")
-        # Motion Blur and Depth of Field Options
         box.prop(self, "enable_motion_blur")
         box.prop(self, "enable_dof")
+        
+        # Useful Links
+        row = layout.row()
+        row.label(text="Useful links :")
+        row.operator("wm.url_open", text="Documentation").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+        row.operator("wm.url_open", text="Contact Us").url = "https://learn.omniscient-app.com/contact-us"
