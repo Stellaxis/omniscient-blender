@@ -40,6 +40,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         for omni_collection in scene.Omni_Collections:
             if omni_collection.collection:
                 omni_collection.collection.hide_viewport = True
+                omni_collection.collection.hide_render = True
 
     # If a matching mesh exists, skip importing the mesh and just import the camera
     imported_mesh = None
