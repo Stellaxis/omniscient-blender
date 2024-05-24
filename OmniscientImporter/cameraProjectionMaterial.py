@@ -32,12 +32,15 @@ def create_projection_shader(material_name, image_name, camera):
     image_texture_node.image_user.frame_start = scene.frame_start
     image_texture_node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
 
-    emission_node = nodes.new("ShaderNodeEmission")
-    emission_node.location = (-100.0, 200.0)
-    emission_node.width = 140.0
+    # Create Principled BSDF node
+    principled_bsdf_node = nodes.new("ShaderNodeBsdfPrincipled")
+    principled_bsdf_node.location = (-100.0, 200.0)
+    principled_bsdf_node.width = 240.0
+    principled_bsdf_node.inputs['Metallic'].default_value = 0.5
+    principled_bsdf_node.inputs['Roughness'].default_value = 0.8
 
     output_node = nodes.new("ShaderNodeOutputMaterial")
-    output_node.location = (80.0, 200.0)
+    output_node.location = (200.0, 200.0)
     output_node.width = 140.0
     output_node.is_active_output = True
     output_node.target = 'ALL'
@@ -163,8 +166,8 @@ def create_projection_shader(material_name, image_name, camera):
 
     create_link(material.node_tree, tex_coord_node, 3, camera_projector_group_node, 0)
     create_link(material.node_tree, camera_projector_group_node, 0, image_texture_node, 0)
-    create_link(material.node_tree, image_texture_node, 0, emission_node, 0)
-    create_link(material.node_tree, emission_node, 0, output_node, 0)
+    create_link(material.node_tree, image_texture_node, 0, principled_bsdf_node, 0)
+    create_link(material.node_tree, principled_bsdf_node, 0, output_node, 0)
 
     # Function to hide (collapse) specific nodes in a node tree
     def hide_specific_nodes(node_tree, node_types):
@@ -180,4 +183,3 @@ def create_projection_shader(material_name, image_name, camera):
     hide_specific_nodes(node_group, node_types_to_hide)
 
     return material
-
