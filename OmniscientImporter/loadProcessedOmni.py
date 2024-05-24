@@ -182,7 +182,20 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     shot.fps = clip_fps
     shot.frame_start = 1
     shot.frame_end = frame_duration
+    shot.resolution_x = width
+    shot.resolution_y = height
+    shot.shutter_speed = bpy.context.scene.render.motion_blur_shutter
     shot.collection = omniscient_collection
+
+    # Save the shutter speed keyframes
+    if imported_cam and imported_cam.data.animation_data:
+        action = imported_cam.data.animation_data.action
+        for fcurve in action.fcurves:
+            if fcurve.data_path == "motion_blur_shutter":
+                for keyframe in fcurve.keyframe_points:
+                    new_keyframe = shot.shutter_speed_keyframes.add()
+                    new_keyframe.frame = keyframe.co[0]
+                    new_keyframe.value = keyframe.co[1]
 
     # Assign a default name to the shot
     shot_index = len(bpy.context.scene.Omni_Shots) - 1

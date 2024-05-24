@@ -3,6 +3,10 @@ from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..setupCompositingNodes import setup_compositing_nodes
 
+class ShutterSpeedKeyframe(PropertyGroup):
+    frame: bpy.props.FloatProperty(name="Frame")
+    value: bpy.props.FloatProperty(name="Value")
+
 @persistent
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
@@ -28,6 +32,10 @@ class OmniShot(PropertyGroup):
     fps: bpy.props.FloatProperty(name="FPS", default=24.0)
     frame_start: bpy.props.IntProperty(name="Start Frame", default=1)
     frame_end: bpy.props.IntProperty(name="End Frame", default=250)
+    resolution_x: bpy.props.IntProperty(name="Resolution X", default=1920)
+    resolution_y: bpy.props.IntProperty(name="Resolution Y", default=1080)
+    shutter_speed: bpy.props.FloatProperty(name="Shutter Speed", default=1.0)
+    shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
 
 class OmniCollection(PropertyGroup):
@@ -124,6 +132,18 @@ class OMNI_OT_SwitchShot(Operator):
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
             scene.render.fps = int(shot.fps)  # Convert fps to int
+            scene.render.resolution_x = shot.resolution_x
+            scene.render.resolution_y = shot.resolution_y
+            scene.render.motion_blur_shutter = shot.shutter_speed
+
+            # Ensure the shutter speed is set in the camera settings
+            if scene.camera and scene.camera.data:
+                for keyframe in shot.shutter_speed_keyframes:
+                    frame = keyframe.frame
+                    value = keyframe.value
+                    scene.camera.data.motion_blur_shutter = value
+                    scene.camera.data.keyframe_insert(data_path="motion_blur_shutter", frame=frame)
+
             adjust_timeline_view(context, shot.frame_start, shot.frame_end)
             if shot.collection:
                 hide_omniscient_collections(scene)
