@@ -300,11 +300,37 @@ def delete_projection_nodes(camera_name):
             principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
             output_node = next((node for node in nodes if node.type == 'OUTPUT_MATERIAL'), None)
 
+            # Find the previous and next ShaderNodeMixRGB nodes
+            prev_mix_rgb_node = None
+            next_mix_rgb_node = None
+            for i, proj_node in enumerate(scene.camera_projection_nodes):
+                if proj_node.name == camera_name:
+                    if i > 0:
+                        prev_proj_node = scene.camera_projection_nodes[i - 1]
+                        prev_mix_rgb_node = nodes.get(prev_proj_node.mix_rgb_node)
+                    if i < len(scene.camera_projection_nodes) - 1:
+                        next_proj_node = scene.camera_projection_nodes[i + 1]
+                        next_mix_rgb_node = nodes.get(next_proj_node.mix_rgb_node)
+                    break
+
             # Remove the nodes
             for node_name in node_names:
                 if node_name in nodes:
                     nodes.remove(nodes[node_name])
             
+            # Reconnect the previous mix node to the next mix node, if they exist
+            if prev_mix_rgb_node and next_mix_rgb_node:
+                # Remove the specific link from the deleted mix node to the next mix node
+                links_to_remove = [link for link in links if link.to_node == next_mix_rgb_node and link.from_node.name == node_entry.mix_rgb_node]
+                for link in links_to_remove:
+                    links.remove(link)
+                
+                # Reconnect previous mix to next mix
+                try:
+                    links.new(prev_mix_rgb_node.outputs[0], next_mix_rgb_node.inputs[1])
+                except IndexError as e:
+                    print(f"Failed to create link: {prev_mix_rgb_node.name} [0] -> {next_mix_rgb_node.name} [1]. Error: {e}")
+
             # Find the latest ShaderNodeMixRGB node from remaining CameraProjectionNodes
             latest_mix_rgb_node = None
             for proj_node in reversed(scene.camera_projection_nodes):
@@ -316,12 +342,15 @@ def delete_projection_nodes(camera_name):
 
             # Ensure the latest mix_rgb_node is connected to the BSDF node
             if latest_mix_rgb_node and latest_mix_rgb_node.outputs and principled_bsdf_node and principled_bsdf_node.inputs:
-                connected = any(link.from_node == latest_mix_rgb_node and link.to_node == principled_bsdf_node for link in links)
-                if not connected:
-                    try:
-                        links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[0])
-                    except IndexError as e:
-                        print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+                # Remove existing links to the BSDF node
+                links_to_remove = [link for link in links if link.to_node == principled_bsdf_node]
+                for link in links_to_remove:
+                    links.remove(link)
+                # Create a new link from the latest mix node to the BSDF node
+                try:
+                    links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[0])
+                except IndexError as e:
+                    print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
 
             # Ensure BSDF node is connected to the output node
             if principled_bsdf_node and principled_bsdf_node.outputs and output_node and output_node.inputs:
