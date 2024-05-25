@@ -284,6 +284,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     node_entry.mix_rgb_node = mix_rgb_node.name
     node_entry.multiply_node = multiply_node.name
 
+    print(f"Added camera projection node: {node_entry.name}, Material: {node_entry.material_name}, Mix Node: {node_entry.mix_rgb_node}")
+
     return material
 
 def delete_projection_nodes(camera_name):
@@ -364,6 +366,116 @@ def delete_projection_nodes(camera_name):
         # Remove the entry from the scene collection
         scene.camera_projection_nodes.remove(node_index)
 
+def reorder_projection_nodes(camera_name):
+    scene = bpy.context.scene
+
+    print("Current camera_projection_nodes:")
+    for entry in scene.camera_projection_nodes:
+        print(f" - Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
+
+    # Find the specified CameraProjectionNodes entry
+    node_entry = None
+    for entry in scene.camera_projection_nodes:
+        if entry.name == camera_name:
+            node_entry = entry
+            break
+
+    if not node_entry:
+        print(f"Error: Camera '{camera_name}' not found in camera_projection_nodes.")
+        return
+
+    print(f"Reordering nodes with '{camera_name}' as the first camera.")
+
+    # Create a list of node entries ordered with the specified camera first
+    ordered_nodes = [node_entry] + [entry for entry in scene.camera_projection_nodes if entry.name != camera_name]
+
+    print("Ordered nodes:")
+    for entry in ordered_nodes:
+        print(f" - Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
+
+    # Clear the scene collection and add back valid entries
+    valid_entries = []
+    for entry in ordered_nodes:
+        if entry.name and entry.material_name and entry.mix_rgb_node:
+            valid_entries.append({
+                'name': entry.name,
+                'material_name': entry.material_name,
+                'tex_coord_node': entry.tex_coord_node,
+                'image_texture_node': entry.image_texture_node,
+                'camera_projector_group_node': entry.camera_projector_group_node,
+                'mix_rgb_node': entry.mix_rgb_node,
+                'multiply_node': entry.multiply_node
+            })
+            print(f"Valid entry found: Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
+        else:
+            print(f"Invalid entry found: Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
+
+    print(f"Valid entries before clearing: {len(valid_entries)}")
+
+    scene.camera_projection_nodes.clear()
+    for entry in valid_entries:
+        new_entry = scene.camera_projection_nodes.add()
+        new_entry.name = entry['name']
+        new_entry.material_name = entry['material_name']
+        new_entry.tex_coord_node = entry['tex_coord_node']
+        new_entry.image_texture_node = entry['image_texture_node']
+        new_entry.camera_projector_group_node = entry['camera_projector_group_node']
+        new_entry.mix_rgb_node = entry['mix_rgb_node']
+        new_entry.multiply_node = entry['multiply_node']
+        print(f"Re-added valid entry: Camera: {new_entry.name}, Material: {new_entry.material_name}, Mix Node: {new_entry.mix_rgb_node}")
+
+    print(f"Entries after clearing and re-adding: {len(scene.camera_projection_nodes)}")
+
+    # Reconnect the nodes in the material node tree
+    prev_mix_rgb_node = None
+    for entry in scene.camera_projection_nodes:
+        material = bpy.data.materials.get(entry.material_name)
+        if not material or not material.node_tree:
+            print(f"Error: Material '{entry.material_name}' not found or has no node tree.")
+            continue
+
+        nodes = material.node_tree.nodes
+        mix_rgb_node = nodes.get(entry.mix_rgb_node)
+        if prev_mix_rgb_node and mix_rgb_node:
+            # Remove the existing link from the previous mix node to the current mix node
+            links_to_remove = [link for link in material.node_tree.links if link.to_node == mix_rgb_node and link.from_node == prev_mix_rgb_node]
+            for link in links_to_remove:
+                material.node_tree.links.remove(link)
+
+            # Create a new link from the previous mix node to the current mix node
+            try:
+                material.node_tree.links.new(prev_mix_rgb_node.outputs[0], mix_rgb_node.inputs[1])
+                print(f"Linked {prev_mix_rgb_node.name} to {mix_rgb_node.name}")
+            except IndexError as e:
+                print(f"Failed to create link: {prev_mix_rgb_node.name} [0] -> {mix_rgb_node.name} [1]. Error: {e}")
+
+        prev_mix_rgb_node = mix_rgb_node
+
+    # Ensure the latest mix_rgb_node is connected to the BSDF node
+    if prev_mix_rgb_node:
+        material = bpy.data.materials.get(scene.camera_projection_nodes[-1].material_name)
+        if material and material.node_tree:
+            nodes = material.node_tree.nodes
+            latest_mix_rgb_node = nodes.get(scene.camera_projection_nodes[-1].mix_rgb_node)
+            principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
+            if latest_mix_rgb_node and principled_bsdf_node:
+                # Remove existing links to the BSDF node
+                links_to_remove = [link for link in material.node_tree.links if link.to_node == principled_bsdf_node]
+                for link in links_to_remove:
+                    material.node_tree.links.remove(link)
+                # Create a new link from the latest mix node to the BSDF node
+                try:
+                    material.node_tree.links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[0])
+                    print(f"Linked {latest_mix_rgb_node.name} to {principled_bsdf_node.name}")
+                except IndexError as e:
+                    print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+
+def register():
+    bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
+
+def unregister():
+    del bpy.types.Scene.camera_projection_nodes
+
 class CameraProjectionNodes(PropertyGroup):
     material_name: StringProperty()
     tex_coord_node: StringProperty()
@@ -371,9 +483,3 @@ class CameraProjectionNodes(PropertyGroup):
     camera_projector_group_node: StringProperty()
     mix_rgb_node: StringProperty()
     multiply_node: StringProperty()
-
-def register():
-    bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
-
-def unregister():
-    del bpy.types.Scene.camera_projection_nodes

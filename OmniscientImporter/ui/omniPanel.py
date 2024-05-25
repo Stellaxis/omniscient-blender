@@ -1,7 +1,7 @@
 import bpy
 from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
-from ..cameraProjectionMaterial import delete_projection_nodes
+from ..cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 
 class ShutterSpeedKeyframe(PropertyGroup):
@@ -153,6 +153,8 @@ class OMNI_OT_SwitchShot(Operator):
             scene.render.resolution_x = shot.resolution_x
             scene.render.resolution_y = shot.resolution_y
             scene.render.motion_blur_shutter = shot.shutter_speed
+
+            reorder_projection_nodes(shot.camera.name)
 
             # Ensure the shutter speed is set in the camera settings
             if scene.camera and scene.camera.data:
