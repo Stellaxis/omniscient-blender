@@ -21,6 +21,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             for obj in coll.objects:
                 if obj.type == 'MESH' and names_match(obj.name, base_name):
                     existing_omniscient_collection = coll
+                    imported_mesh = obj
                     break
         if existing_omniscient_collection:
             break
@@ -43,7 +44,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
                 omni_collection.collection.hide_render = True
 
     # If a matching mesh exists, skip importing the mesh and just import the camera
-    imported_mesh = None
     if existing_omniscient_collection is None:
         # Capture the initial state of mesh objects in the scene
         initial_mesh_state = capture_mesh_state()
