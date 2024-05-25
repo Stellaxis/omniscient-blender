@@ -143,10 +143,16 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
             imported_cam.data.sensor_fit = 'VERTICAL'
         apply_camera_settings(imported_cam, camera_settings)
 
-        # Create projection shader
-        material_name = "Scan_Material_Omni"
+        # Create a unique material name
+        material_name = f"Scan_Material_Omni_{base_name}"
         image_name = img.name
-        material = create_projection_shader(material_name, image_name, imported_cam)
+        # Check if the material already exists
+        material = bpy.data.materials.get(material_name)
+        if not material:
+            material = create_projection_shader(material_name, image_name, imported_cam)
+        else:
+            # Update the existing material if it already exists
+            create_projection_shader(material_name, image_name, imported_cam)
 
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
