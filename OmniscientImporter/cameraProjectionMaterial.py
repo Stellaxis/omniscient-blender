@@ -1,4 +1,6 @@
 import bpy
+from bpy.types import PropertyGroup
+from bpy.props import StringProperty
 from bpy.app import version
 
 def is_blender_4():
@@ -252,4 +254,45 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     hide_specific_nodes(material.node_tree, node_types_to_hide)
     hide_specific_nodes(node_group, node_types_to_hide)
 
+    # Custom property to store the node references
+    scene = bpy.context.scene
+    node_entry = scene.camera_projection_nodes.add()
+    node_entry.name = new_camera.name
+    node_entry.material_name = material_name
+    node_entry.tex_coord_node = tex_coord_node.name
+    node_entry.image_texture_node = new_image_texture_node.name
+    node_entry.camera_projector_group_node = camera_projector_group_node.name
+    node_entry.mix_rgb_node = mix_rgb_node.name
+    node_entry.multiply_node = multiply_node.name
+
     return material
+
+def delete_projection_nodes(camera_name):
+    scene = bpy.context.scene
+    node_index = scene.camera_projection_nodes.find(camera_name)
+    if node_index != -1:
+        node_entry = scene.camera_projection_nodes[node_index]
+        material = bpy.data.materials.get(node_entry.material_name)
+        if material:
+            nodes = material.node_tree.nodes
+            node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_node, node_entry.multiply_node]
+            
+            for node_name in node_names:
+                if node_name in nodes:
+                    nodes.remove(nodes[node_name])
+        
+        scene.camera_projection_nodes.remove(node_index)
+
+class CameraProjectionNodes(PropertyGroup):
+    material_name: StringProperty()
+    tex_coord_node: StringProperty()
+    image_texture_node: StringProperty()
+    camera_projector_group_node: StringProperty()
+    mix_rgb_node: StringProperty()
+    multiply_node: StringProperty()
+
+def register():
+    bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
+
+def unregister():
+    del bpy.types.Scene.camera_projection_nodes

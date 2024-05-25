@@ -1,6 +1,7 @@
 import bpy
 from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
+from ..cameraProjectionMaterial import delete_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 
 class ShutterSpeedKeyframe(PropertyGroup):
@@ -180,6 +181,8 @@ class OMNI_OT_DeleteShot(Operator):
         scene = context.scene
         if 0 <= self.index < len(scene.Omni_Shots):
             shot = scene.Omni_Shots[self.index]
+
+            delete_projection_nodes(shot.camera.name)
 
             # Unlink camera from scene and collection
             if shot.camera:
