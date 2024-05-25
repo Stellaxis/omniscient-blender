@@ -294,12 +294,45 @@ def delete_projection_nodes(camera_name):
         material = bpy.data.materials.get(node_entry.material_name)
         if material:
             nodes = material.node_tree.nodes
+            links = material.node_tree.links
             node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_node, node_entry.multiply_node]
             
+            principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
+            output_node = next((node for node in nodes if node.type == 'OUTPUT_MATERIAL'), None)
+
+            # Remove the nodes
             for node_name in node_names:
                 if node_name in nodes:
                     nodes.remove(nodes[node_name])
+            
+            # Find the latest ShaderNodeMixRGB node from remaining CameraProjectionNodes
+            latest_mix_rgb_node = None
+            for proj_node in reversed(scene.camera_projection_nodes):
+                if proj_node.name != camera_name:
+                    potential_mix_rgb_node = nodes.get(proj_node.mix_rgb_node)
+                    if potential_mix_rgb_node:
+                        latest_mix_rgb_node = potential_mix_rgb_node
+                        break
+
+            # Ensure the latest mix_rgb_node is connected to the BSDF node
+            if latest_mix_rgb_node and latest_mix_rgb_node.outputs and principled_bsdf_node and principled_bsdf_node.inputs:
+                connected = any(link.from_node == latest_mix_rgb_node and link.to_node == principled_bsdf_node for link in links)
+                if not connected:
+                    try:
+                        links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[0])
+                    except IndexError as e:
+                        print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+
+            # Ensure BSDF node is connected to the output node
+            if principled_bsdf_node and principled_bsdf_node.outputs and output_node and output_node.inputs:
+                connected = any(link.from_node == principled_bsdf_node and link.to_node == output_node for link in links)
+                if not connected:
+                    try:
+                        links.new(principled_bsdf_node.outputs[0], output_node.inputs[0])
+                    except IndexError as e:
+                        print(f"Failed to create link: {principled_bsdf_node.name} [0] -> {output_node.name} [0]. Error: {e}")
         
+        # Remove the entry from the scene collection
         scene.camera_projection_nodes.remove(node_index)
 
 class CameraProjectionNodes(PropertyGroup):
