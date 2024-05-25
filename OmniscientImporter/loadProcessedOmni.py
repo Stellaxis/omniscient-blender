@@ -125,6 +125,19 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
         bpy.context.scene.render.motion_blur_shutter = 0.5
         bpy.context.scene.render.use_motion_blur = True
 
+    # Store the shot settings
+    shot = bpy.context.scene.Omni_Shots.add()
+    shot.camera = imported_cam
+    shot.mesh = imported_mesh
+    shot.video = img
+    shot.fps = clip_fps
+    shot.frame_start = 1
+    shot.frame_end = frame_duration
+    shot.resolution_x = width
+    shot.resolution_y = height
+    shot.shutter_speed = bpy.context.scene.render.motion_blur_shutter
+    shot.collection = omniscient_collection
+
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
         move_to_collection(imported_cam, omniscient_collection)
@@ -180,19 +193,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     setup_compositing_nodes(img)
 
     showTextPopup("Success!")
-
-    # Store the shot settings
-    shot = bpy.context.scene.Omni_Shots.add()
-    shot.camera = imported_cam
-    shot.mesh = imported_mesh
-    shot.video = img
-    shot.fps = clip_fps
-    shot.frame_start = 1
-    shot.frame_end = frame_duration
-    shot.resolution_x = width
-    shot.resolution_y = height
-    shot.shutter_speed = bpy.context.scene.render.motion_blur_shutter
-    shot.collection = omniscient_collection
 
     # Save the shutter speed keyframes
     if imported_cam and imported_cam.data.animation_data:

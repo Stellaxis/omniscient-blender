@@ -37,6 +37,7 @@ class OmniShot(PropertyGroup):
     shutter_speed: bpy.props.FloatProperty(name="Shutter Speed", default=1.0)
     shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+    camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
 
 class OmniCollection(PropertyGroup):
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
@@ -105,6 +106,7 @@ class OMNI_UL_ShotList(UIList):
             row.prop(shot, "name", text="", emboss=False)
             row.label(text=f" {shot.collection.name if shot.collection else 'None'}")
             
+            row.operator("object.toggle_camera_projection", text="", icon='RESTRICT_VIEW_OFF' if shot.camera_projection_multiply == 1.0 else 'RESTRICT_VIEW_ON').index = index
             row.operator("object.delete_shot", text="", icon='X').index = index
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
@@ -195,6 +197,24 @@ class OMNI_OT_DeleteShot(Operator):
             return {'FINISHED'}
         return {'CANCELLED'}
 
+class OMNI_OT_ToggleCameraProjection(Operator):
+    bl_idname = "object.toggle_camera_projection"
+    bl_label = "Toggle Camera Projection"
+
+    index: bpy.props.IntProperty()
+
+    def execute(self, context):
+        scene = context.scene
+        shot = scene.Omni_Shots[self.index]
+        shot.camera_projection_multiply = 1.0 if shot.camera_projection_multiply == 0.0 else 0.0
+        
+        # Debug print to trace property update
+        print(f"Toggled camera_projection_multiply for shot {shot.name} to {shot.camera_projection_multiply}")
+
+        # Force update dependencies
+        update_related_drivers(shot)
+        return {'FINISHED'}
+
 def hide_omniscient_collections(scene):
     for omni_collection in scene.Omni_Collections:
         if omni_collection.collection:
@@ -223,6 +243,43 @@ def selected_shot_index_update(self, context):
     
     if context.scene.camera != current_shot.camera:
         bpy.ops.object.switch_shot(index=current_index)
+
+def add_driver_for_multiply(node, shot_index, data_path):
+    driver = node.inputs[1].driver_add("default_value").driver
+    driver.type = 'SCRIPTED'
+    var = driver.variables.new()
+    var.name = 'projection_multiply'
+    var.targets[0].id_type = 'SCENE'
+    var.targets[0].id = bpy.context.scene
+    var.targets[0].data_path = f"Omni_Shots[{shot_index}].{data_path}"
+    driver.expression = var.name
+
+    # Force update dependencies
+    bpy.context.scene.update_tag()
+    bpy.context.view_layer.update()
+
+def update_related_drivers(shot):
+    # Debug print to trace function call
+    print(f"Updating drivers for shot {shot.name}")
+
+    def update_driver(driver):
+        if driver:
+            driver.expression = driver.expression  # Or update to any new expression
+
+    # Update drivers related to the shot's mesh
+    if shot.mesh and shot.mesh.type == 'MESH':
+        for mat in shot.mesh.data.materials:
+            if mat and mat.node_tree and mat.node_tree.animation_data:
+                for fcurve in mat.node_tree.animation_data.drivers:
+                    # Check if the driver is for an input socket's default value
+                    data_path = fcurve.data_path
+                    if '.inputs[' in data_path and data_path.endswith('default_value'):
+                        update_driver(fcurve.driver)
+                        
+def update_driver(obj):
+    if obj.animation_data:
+        for fc in obj.animation_data.drivers:
+            fc.driver.expression = fc.driver.expression
 
 def register():
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(

@@ -171,33 +171,66 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     # Create links in the main material
     def create_link(node_tree, from_node, from_socket, to_node, to_socket):
+        if from_node is None or to_node is None:
+            print(f"Linking error: {from_node} to {to_node}")
+            return
         try:
             node_tree.links.new(from_node.outputs[from_socket], to_node.inputs[to_socket])
         except IndexError as e:
-                print(f"Failed to create link: {from_node.name} [{from_socket}] -> {to_node.name} [{to_socket}]. Error: {e}")
+            print(f"Failed to create link: {from_node.name} [{from_socket}] -> {to_node.name} [{to_socket}]. Error: {e}")
+        except AttributeError as e:
+            print(f"AttributeError: {from_node} or {to_node} is not valid. Error: {e}")
 
     create_link(material.node_tree, tex_coord_node, 3, camera_projector_group_node, 0)
     create_link(material.node_tree, camera_projector_group_node, 0, new_image_texture_node, 0)
 
-    # Create a mix RGB node if there's an existing image texture node
-    if previous_image_node or previous_mix_node:
-        new_mix_node = nodes.new("ShaderNodeMixRGB")
-        new_mix_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1) + vertical_spacing / 2)
-        new_mix_node.blend_type = 'MIX'
-        new_mix_node.inputs[0].default_value = 0.5  # Adjust blend factor as needed
+    # Create a mix RGB node to control the visibility of the projection
+    mix_rgb_node = nodes.new("ShaderNodeMixRGB")
+    mix_rgb_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+    mix_rgb_node.blend_type = 'MIX'
 
-        if previous_mix_node:
-            create_link(material.node_tree, previous_mix_node, 0, new_mix_node, 1)
-        else:
-            create_link(material.node_tree, previous_image_node, 0, new_mix_node, 1)
+    # Store the mix node reference in the shot property
+    shot = bpy.context.scene.Omni_Shots[-1]
+    shot.mix_node_name = mix_rgb_node.name
 
-        create_link(material.node_tree, new_image_texture_node, 0, new_mix_node, 2)
-        create_link(material.node_tree, new_image_texture_node, 1, new_mix_node, 0)  # Connect alpha to mix shader
+    # Create a new multiply node for alpha
+    multiply_node = nodes.new("ShaderNodeMath")
+    multiply_node.location = (-800.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+    multiply_node.operation = 'MULTIPLY'
+    create_link(material.node_tree, new_image_texture_node, 1, multiply_node, 0)  # Alpha to multiply node
 
-        previous_mix_node = new_mix_node
-        create_link(material.node_tree, previous_mix_node, 0, principled_bsdf_node, 0)
+    # Add driver for the camera projection multiply
+    def add_driver_for_multiply(node, shot_index, data_path):
+        driver = node.inputs[1].driver_add("default_value").driver
+        driver.type = 'SCRIPTED'
+        var = driver.variables.new()
+        var.name = 'projection_multiply'
+        var.targets[0].id_type = 'SCENE'
+        var.targets[0].id = bpy.context.scene
+        var.targets[0].data_path = f"Omni_Shots[{shot_index}].{data_path}"
+        driver.expression = var.name
+
+        # Force update dependencies
+        bpy.context.scene.update_tag()
+        bpy.context.view_layer.update()
+
+    # Use the index of the current shot
+    shot_index = bpy.context.scene.Omni_Shots.find(shot.name)
+    add_driver_for_multiply(multiply_node, shot_index, "camera_projection_multiply")
+
+    # Link mix RGB node to the material's node tree
+    if previous_mix_node:
+        create_link(material.node_tree, previous_mix_node, 0, mix_rgb_node, 1)
     else:
-        create_link(material.node_tree, new_image_texture_node, 0, principled_bsdf_node, 0)
+        create_link(material.node_tree, previous_image_node, 0, mix_rgb_node, 1)
+    create_link(material.node_tree, new_image_texture_node, 0, mix_rgb_node, 2)
+    create_link(material.node_tree, multiply_node, 0, mix_rgb_node, 0)  # Multiply output to mix node input 0
+
+    previous_mix_node = mix_rgb_node
+
+    # Create link to BSDF and Output nodes
+    create_link(material.node_tree, mix_rgb_node, 0, principled_bsdf_node, 0)
+    create_link(material.node_tree, principled_bsdf_node, 0, output_node, 0)
 
     # Position the BSDF and Output nodes in between the rows
     total_rows = len(existing_image_nodes) + 2
@@ -205,8 +238,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     principled_bsdf_node.location.y = bsdf_vertical_position
     output_node.location.y = bsdf_vertical_position
-
-    create_link(material.node_tree, principled_bsdf_node, 0, output_node, 0)
 
     # Function to hide (collapse) specific nodes in a node tree
     def hide_specific_nodes(node_tree, node_types):
