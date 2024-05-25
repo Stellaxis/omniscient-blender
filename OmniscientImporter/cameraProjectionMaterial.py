@@ -47,7 +47,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     # Create new image texture node for the new image
     new_image_texture_node = nodes.new("ShaderNodeTexImage")
-    new_image_texture_node.location = (-600.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+    new_image_texture_node.location = (-750.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     new_image_texture_node.width = 240.0
     new_image_texture_node.image = bpy.data.images.get(new_image_name)
     new_image_texture_node.projection = 'FLAT'
@@ -195,7 +195,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     # Create a new multiply node for alpha
     multiply_node = nodes.new("ShaderNodeMath")
-    multiply_node.location = (-800.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+    multiply_node.location = (-400.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     multiply_node.operation = 'MULTIPLY'
     create_link(material.node_tree, new_image_texture_node, 1, multiply_node, 0)  # Alpha to multiply node
 
