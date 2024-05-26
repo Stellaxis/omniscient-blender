@@ -386,10 +386,11 @@ def reorder_projection_nodes(camera_name):
 
     print(f"Reordering nodes with '{camera_name}' as the first camera.")
 
-    # Create a list of node entries ordered with the specified camera first
+    # Create a list of node entries ordered with the specified camera first and then reverse the order
     ordered_nodes = [node_entry] + [entry for entry in scene.camera_projection_nodes if entry.name != camera_name]
+    ordered_nodes.reverse()
 
-    print("Ordered nodes:")
+    print("Ordered nodes (inverted):")
     for entry in ordered_nodes:
         print(f" - Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
 
