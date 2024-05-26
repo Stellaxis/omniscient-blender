@@ -1,8 +1,8 @@
 {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "blender": {
         "minimum_addon_version": "1.4.0",
-        "ideal_addon_version": "1.4.0"
+        "ideal_addon_version": "1.5.0"
     },
     "cinema4d": {
         "minimum_plugin_version": "1.0.0",
@@ -15,7 +15,27 @@
                 "width": 1080,
                 "height": 1920
             },
-            "fps": 30
+            "fps": 30,
+            "frames" : [
+                {
+                    "white_balance" : 2946,
+                    "focus_distance" : 2.1,
+                    "flash_level" : 0,
+                    "shutter_speed" : 0.0099,
+                    "focal_length" : 25.960,
+                    "iso" : 320,
+                    "exposure" : 10.1
+                },
+                {
+                    "exposure" : 10.2,
+                    "focal_length" : 25.961,
+                    "white_balance" : 2946,
+                    "focus_distance" : 2.2,
+                    "shutter_speed" : 0.0099,
+                    "flash_level" : 1.0,
+                    "iso" : 320
+                }
+            ]
         },
         "camera": {
             "relative_path": "./camera.abc"
