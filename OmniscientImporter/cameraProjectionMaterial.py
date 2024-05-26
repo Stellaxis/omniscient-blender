@@ -426,6 +426,19 @@ def reorder_projection_nodes(camera_name):
 
     print(f"Entries after clearing and re-adding: {len(scene.camera_projection_nodes)}")
 
+    # Disconnect the input [1] of the first mix RGB node
+    first_node_entry = scene.camera_projection_nodes[0]
+    first_material = bpy.data.materials.get(first_node_entry.material_name)
+    if first_material and first_material.node_tree:
+        nodes = first_material.node_tree.nodes
+        first_mix_rgb_node = nodes.get(first_node_entry.mix_rgb_node)
+        if first_mix_rgb_node:
+            # Remove links to input [1] of the first mix RGB node
+            links_to_remove = [link for link in first_material.node_tree.links if link.to_node == first_mix_rgb_node and link.to_socket == first_mix_rgb_node.inputs[1]]
+            for link in links_to_remove:
+                first_material.node_tree.links.remove(link)
+            print(f"Disconnected input [1] of the first mix RGB node: {first_mix_rgb_node.name}")
+
     # Reconnect the nodes in the material node tree
     prev_mix_rgb_node = None
     for entry in scene.camera_projection_nodes:
