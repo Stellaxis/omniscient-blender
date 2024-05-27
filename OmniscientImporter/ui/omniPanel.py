@@ -105,8 +105,6 @@ class OMNI_UL_ShotList(UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
             row.prop(shot, "name", text="", emboss=False)
-            row.label(text=f" {shot.collection.name if shot.collection else 'None'}")
-            
             row.operator("object.toggle_camera_projection", text="", icon='RESTRICT_VIEW_OFF' if shot.camera_projection_multiply == 1.0 else 'RESTRICT_VIEW_ON').index = index
             row.operator("object.delete_shot", text="", icon='X').index = index
         elif self.layout_type in {'GRID'}:
