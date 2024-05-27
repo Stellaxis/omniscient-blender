@@ -21,12 +21,17 @@ def loadOmni(self, omni_file):
     blender_data = data['blender']
     if blender_data:
         minimum_addon_version = blender_data['minimum_addon_version']
+        ideal_addon_version = blender_data.get('ideal_addon_version')
         if minimum_addon_version:
             current_version = bl_info['version']
             current_version_str = ".".join(str(x) for x in current_version)
             if current_version_str < minimum_addon_version:
-                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version = minimum_addon_version, current_version_str = current_version_str)
+                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version=minimum_addon_version, current_version_str=current_version_str)
                 return {'CANCELLED'}
+
+        # Check if the current version is lower than the ideal version
+        if ideal_addon_version and current_version_str < ideal_addon_version:
+            bpy.context.window_manager.popup_text = f"Recommended version is:\n{ideal_addon_version}"
 
     # Get the filepaths from the json data
     video_relative_path = ""

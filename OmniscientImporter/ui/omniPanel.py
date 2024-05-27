@@ -225,6 +225,40 @@ class OMNI_OT_ToggleCameraProjection(Operator):
         update_related_drivers(shot)
         return {'FINISHED'}
 
+class OMNI_PT_VersionWarningPanel(Panel):
+    bl_label = "Version Warning"
+    bl_idname = "OMNI_PT_version_warning"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Omniscient'
+    bl_order = 2
+
+    @classmethod
+    def poll(cls, context):
+        wm = context.window_manager
+        return bool(wm.popup_text)
+
+    def draw(self, context):
+        layout = self.layout
+        wm = context.window_manager
+
+        if wm.popup_text:
+            lines = wm.popup_text.split('\n')
+            if lines:
+                # First line with error icon
+                row = layout.row()
+                row.alert = True
+                row.label(text=lines[0], icon='ERROR')
+                
+                # Center the remaining lines without error icon
+                for line in lines[1:]:
+                    row = layout.row()
+                    row.alignment = 'CENTER'
+                    row.label(text=line)
+            
+            row = layout.row()
+            row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+
 def hide_omniscient_collections(scene):
     for omni_collection in scene.Omni_Collections:
         if omni_collection.collection:
@@ -303,6 +337,10 @@ def update_driver(obj):
             fc.driver.expression = fc.driver.expression
 
 def register():
+    bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
+        name="Popup Text",
+        default=""
+    )
     bpy.types.Scene.Camera_Omni = bpy.props.PointerProperty(
         name="Camera_Omni",
         type=bpy.types.Object
@@ -329,6 +367,7 @@ def register():
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
 
 def unregister():
+    del bpy.types.WindowManager.popup_text
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
     del bpy.types.Scene.Active_Camera_Name
