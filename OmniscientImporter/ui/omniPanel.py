@@ -3,6 +3,7 @@ from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
+from ..loadCustomIcons import load_custom_icons, preview_collections
 
 class ShutterSpeedKeyframe(PropertyGroup):
     frame: bpy.props.FloatProperty(name="Frame")
@@ -104,7 +105,14 @@ class OMNI_UL_ShotList(UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
             row.prop(shot, "name", text="", emboss=False)
-            row.operator("object.toggle_camera_projection", text="", icon='RESTRICT_VIEW_OFF' if shot.camera_projection_multiply == 1.0 else 'RESTRICT_VIEW_ON').index = index
+            
+            # Custom camera projector icons
+            pcoll = preview_collections["main"]
+            icon_on = pcoll["icon_cameraProjector_on"].icon_id
+            icon_off = pcoll["icon_cameraProjector_off"].icon_id
+            icon_value = icon_on if shot.camera_projection_multiply == 1.0 else icon_off
+            row.operator("object.toggle_camera_projection", text="", icon_value=icon_value).index = index
+
             row.operator("object.delete_shot", text="", icon='X').index = index
         elif self.layout_type in {'GRID'}:
             layout.alignment = 'CENTER'
