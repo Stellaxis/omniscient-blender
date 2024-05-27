@@ -195,14 +195,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     showTextPopup("Success!")
 
     # Save the shutter speed keyframes
-    if imported_cam and imported_cam.data.animation_data:
-        action = imported_cam.data.animation_data.action
-        for fcurve in action.fcurves:
-            if fcurve.data_path == "motion_blur_shutter":
-                for keyframe in fcurve.keyframe_points:
-                    new_keyframe = shot.shutter_speed_keyframes.add()
-                    new_keyframe.frame = keyframe.co[0]
-                    new_keyframe.value = keyframe.co[1]
+    save_camera_settings(shot, camera_settings)
 
     # Assign a default name to the shot
     shot_index = len(bpy.context.scene.Omni_Shots) - 1
@@ -298,6 +291,14 @@ def apply_camera_settings(camera, settings):
             scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame_index)
         camera.data.keyframe_insert(data_path="lens", frame=frame_index)
         camera.data.dof.keyframe_insert(data_path="focus_distance", frame=frame_index)
+
+def save_camera_settings(shot, settings):
+    for frame_index, frame_data in enumerate(settings, start=1):
+        if 'shutter_speed' in frame_data:
+            new_keyframe = shot.shutter_speed_keyframes.add()
+            new_keyframe.frame = frame_index
+            new_keyframe.value = frame_data['shutter_speed']
+            print(f"Added keyframe at frame {new_keyframe.frame} with value {new_keyframe.value}")
 
 def calculate_frame_indices(camera_fps, clip_fps, frame_duration):
     first_frame_index = (1 / camera_fps) * clip_fps

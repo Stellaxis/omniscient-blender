@@ -35,7 +35,6 @@ class OmniShot(PropertyGroup):
     frame_end: bpy.props.IntProperty(name="End Frame", default=250)
     resolution_x: bpy.props.IntProperty(name="Resolution X", default=1920)
     resolution_y: bpy.props.IntProperty(name="Resolution Y", default=1080)
-    shutter_speed: bpy.props.FloatProperty(name="Shutter Speed", default=1.0)
     shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
@@ -150,17 +149,17 @@ class OMNI_OT_SwitchShot(Operator):
             scene.render.fps = int(shot.fps)  # Convert fps to int
             scene.render.resolution_x = shot.resolution_x
             scene.render.resolution_y = shot.resolution_y
-            scene.render.motion_blur_shutter = shot.shutter_speed
 
             reorder_projection_nodes(shot.camera.name)
 
-            # Ensure the shutter speed is set in the camera settings
+            # Set scene's motion blur based on shot's settings 
             if scene.camera and scene.camera.data:
+                clear_motion_blur_keyframes(scene)
                 for keyframe in shot.shutter_speed_keyframes:
                     frame = keyframe.frame
-                    value = keyframe.value
-                    scene.camera.data.motion_blur_shutter = value
-                    scene.camera.data.keyframe_insert(data_path="motion_blur_shutter", frame=frame)
+                    value = keyframe.value * int(shot.fps)
+                    scene.render.motion_blur_shutter = value
+                    scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame)
 
             adjust_timeline_view(context, shot.frame_start, shot.frame_end)
             if shot.collection:
@@ -223,6 +222,17 @@ def hide_omniscient_collections(scene):
         if omni_collection.collection:
             omni_collection.collection.hide_viewport = True
             omni_collection.collection.hide_render = True
+
+def clear_motion_blur_keyframes(scene):
+    # Ensure the scene's animation data exists
+    if scene.animation_data:
+        action = scene.animation_data.action
+        if action:
+            # Find the fcurve for motion_blur_shutter in scene.render and clear its keyframes
+            for fcurve in action.fcurves:
+                if fcurve.data_path == "render.motion_blur_shutter":
+                    action.fcurves.remove(fcurve)
+                    break
 
 def adjust_timeline_view(context, frame_start, frame_end):
     # Set the preview range
