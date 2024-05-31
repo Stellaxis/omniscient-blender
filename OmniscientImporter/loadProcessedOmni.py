@@ -222,6 +222,7 @@ def import_camera(camera_filepath):
         bpy.ops.wm.alembic_import(filepath=camera_filepath)
     elif camera_filepath.endswith('.fbx'):
         bpy.ops.import_scene.fbx(filepath=camera_filepath)
+        showTextPopup("Note: FBX format does not support importing the f-stop setting.")
     elif camera_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
 
