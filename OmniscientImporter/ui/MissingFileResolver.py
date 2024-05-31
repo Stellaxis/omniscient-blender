@@ -95,7 +95,7 @@ class MissingFileResolver(bpy.types.Operator):
             row.prop(self, "GeoPath", text="Geometry", icon='CHECKBOX_HLT')
 
     def execute(self, context):
-        loadProcessedOmni(self.VideoPath, self.CameraPath, self.GeoPath)
+        loadProcessedOmni(self, self.VideoPath, self.CameraPath, self.GeoPath)
         return {'FINISHED'}
     
     def invoke(self, context, event):

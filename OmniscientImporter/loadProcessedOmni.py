@@ -4,7 +4,7 @@ from .cameraProjectionMaterial import create_projection_shader
 from .setupCompositingNodes import setup_compositing_nodes
 import os
 
-def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
+def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
     def get_base_name(filepath):
         return os.path.splitext(os.path.basename(filepath))[0]
 
@@ -80,7 +80,7 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
 
     # Import the camera file into the blender scene
     initial_camera_state = capture_camera_state()
-    import_camera(camera_filepath)
+    import_camera(self, camera_filepath)
     imported_cam = find_new_camera(initial_camera_state)
 
     # Ensure camera_fps is a float or None if not provided or conversion fails
@@ -215,12 +215,12 @@ def capture_camera_state():
     # Capture the initial state of camera objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
 
-def import_camera(camera_filepath):
+def import_camera(self, camera_filepath):
     if camera_filepath.endswith('.abc'):
         bpy.ops.wm.alembic_import(filepath=camera_filepath)
     elif camera_filepath.endswith('.fbx'):
         bpy.ops.import_scene.fbx(filepath=camera_filepath)
-        showTextPopup("Note: FBX format does not support importing the f-stop setting.")
+        self.report({'WARNING'}, "FBX format does not support importing the f-stop setting.")
     elif camera_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
 

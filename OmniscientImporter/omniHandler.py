@@ -76,7 +76,7 @@ def loadOmni(self, omni_file):
         # self.report({'ERROR'}, f"Geo file not found at {geo_filepath}")
 
     if (not isVideoFileMissing) and (not isCameraFileMissing) and (not isGeoFileMissing):
-        loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps, camera_settings)
+        loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camera_fps, camera_settings)
 
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
