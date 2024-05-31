@@ -38,18 +38,19 @@ def loadOmni(self, omni_file):
     camera_relative_path = ""
     geo_relative_path = ""
     omni_file_version = data['version']
-    if omni_file_version >= "2.0.0":
-        video_relative_path = data['data']['video']['relative_path']
-        camera_relative_path = data['data']['camera']['relative_path']
-        geo_relative_path = data['data']['geometry']['relative_path'][0]
-        # Extract camera FPS value
-        camera_data = data.get("data", {}).get("camera", {})
-        camera_fps = camera_data.get("fps")
-    else:
-        video_relative_path = data['data']['video_relative_path']
-        camera_relative_path = data['data']['camera_relative_path']
-        geo_relative_path = data['data']['geo_relative_path'][0]
-        camera_fps = 24 # 24fps is the only fps used before v2.0.0
+
+    # Check if the Omni file version is below 2.1.0
+    if omni_file_version < "2.1.0":
+        self.report({'ERROR'}, "Please re-export the shot using the Omniscient app version 1.16 or later.")
+        return {'CANCELLED'}
+
+    video_relative_path = data['data']['video']['relative_path']
+    camera_relative_path = data['data']['camera']['relative_path']
+    geo_relative_path = data['data']['geometry']['relative_path'][0]
+
+    # Extract camera FPS value
+    camera_data = data.get("data", {}).get("camera", {})
+    camera_fps = camera_data.get("fps")
 
     camera_settings = data['data']['camera']['frames']
 
