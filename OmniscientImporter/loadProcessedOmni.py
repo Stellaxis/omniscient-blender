@@ -192,8 +192,6 @@ def loadProcessedOmni(video_filepath, camera_filepath, geo_filepath, camera_fps=
     # Set up compositing nodes
     setup_compositing_nodes(img)
 
-    showTextPopup("Success!")
-
     # Save the shutter speed keyframes
     save_camera_settings(shot, camera_settings)
 
