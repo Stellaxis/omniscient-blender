@@ -1,3 +1,23 @@
+# 2.0.0 - (2023.06.01)
+
+### Features
+- Omniscient panel with import preferences and shot switcher
+- Animated focus distance and focal length
+- Setup scene’s shutter speed based on the shot
+- Auto switch shot when changing camera
+- Camera projection setup per shot
+- Multi-camera projection with priority to the active camera
+- Setup shadow catcher and holdout
+- Base setup compositing graph
+- Inform user of the ideal version
+- Contact info and documentation link
+- Shade smooth imported mesh
+- Set background image default opacity to 100%
+- Adjust timeline view to fit frame range
+- Minimum omni file version
+- Popup fbx f-stop
+- Remove popup success
+
 # 1.4.1 - (2023.04.16)
 
 ### Fix
