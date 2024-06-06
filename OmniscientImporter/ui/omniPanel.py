@@ -83,6 +83,11 @@ class OMNI_PT_PreferencesPanel(Panel):
         box.prop(prefs, "enable_motion_blur")
         box.prop(prefs, "enable_dof")
 
+        # Camera Keyframes Baking Option
+        box = layout.box()
+        box.label(text="Camera Settings", icon='CAMERA_DATA')
+        box.prop(prefs, "bake_camera_keyframes")
+
 class OMNI_PT_ShotsPanel(Panel):
     bl_label = "Shots"
     bl_idname = "OMNI_PT_shots"

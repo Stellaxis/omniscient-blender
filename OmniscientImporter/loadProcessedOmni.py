@@ -211,6 +211,14 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     # Trigger the shot switch
     bpy.ops.object.switch_shot(index=shot_index)
 
+    # Bake camera keyframes if the preference is enabled
+    if prefs.bake_camera_keyframes and imported_cam:
+        bpy.context.view_layer.objects.active = imported_cam
+        bpy.ops.object.bake_camera_keyframes(
+            frame_start=1,
+            frame_end=frame_duration
+        )
+
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')

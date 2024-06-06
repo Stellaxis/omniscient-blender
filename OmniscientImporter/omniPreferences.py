@@ -38,6 +38,12 @@ class OMNI_Preferences(AddonPreferences):
         description="Activate depth of field for the renderer",
         default=True
     )
+    
+    bake_camera_keyframes: BoolProperty(
+        name="Bake Camera Keyframes",
+        description="Bake camera keyframes after import",
+        default=True
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -54,6 +60,11 @@ class OMNI_Preferences(AddonPreferences):
         box.prop(self, "renderer")
         box.prop(self, "enable_motion_blur")
         box.prop(self, "enable_dof")
+        
+        # Bake Camera Keyframes
+        box = layout.box()
+        box.label(text="Camera Settings", icon='CAMERA_DATA')
+        box.prop(self, "bake_camera_keyframes")
         
         # Useful Links
         row = layout.row()
