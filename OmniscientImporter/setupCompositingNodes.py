@@ -89,17 +89,60 @@ def setup_compositing_nodes(image):
         mix_node.label = ''
         mix_node.inputs['Fac'].default_value = 1.0
 
+        # Add a scale node
+        scale_node = nodes.new(type='CompositorNodeScale')
+        scale_node.name = 'Scale'
+        scale_node.location = (-280.0, 280.0)
+        scale_node.space = 'RELATIVE'
+
         # Create links
         links.new(render_layers_node.outputs['Image'], alpha_over_node.inputs[2])
         links.new(alpha_over_node.outputs['Image'], composite_node.inputs['Image'])
         links.new(mix_node.outputs['Image'], alpha_over_node.inputs[1])
         links.new(alpha_over_node.outputs['Image'], viewer_node.inputs['Image'])
-        links.new(image_node.outputs['Image'], mix_node.inputs[1])
+        links.new(image_node.outputs['Image'], scale_node.inputs['Image'])
+        links.new(scale_node.outputs['Image'], mix_node.inputs[1])
         links.new(render_layers_node.outputs['Shadow Catcher'], mix_node.inputs[2])
+
+    # If the image node exists, ensure the scale node is created
+    scale_node = nodes.get('Scale')
+    if scale_node is None:
+        scale_node = nodes.new(type='CompositorNodeScale')
+        scale_node.name = 'Scale'
+        scale_node.location = (-250.0, 280.0)
+        scale_node.space = 'RELATIVE'
+        links.new(image_node.outputs['Image'], scale_node.inputs['Image'])
 
     # Update the image in the image node
     image_node.image = image
     image_node.frame_duration = image.frame_duration
 
-    # Refresh of the compositor
+    # Add drivers to the scale node
+    def add_driver(socket, scene_data_path, image_data_path, var_name_scene, var_name_image, expression):
+        driver = socket.driver_add("default_value").driver
+        driver.type = 'SCRIPTED'
+
+        def find_or_create_var(driver, var_name, id_type, target_id, data_path):
+            for var in driver.variables:
+                if var.name == var_name:
+                    var.targets[0].id = target_id
+                    var.targets[0].data_path = data_path
+                    return var
+            var = driver.variables.new()
+            var.name = var_name
+            var.targets[0].id_type = id_type
+            var.targets[0].id = target_id
+            var.targets[0].data_path = data_path
+            return var
+
+        find_or_create_var(driver, var_name_scene, 'SCENE', bpy.context.scene, scene_data_path)
+        find_or_create_var(driver, var_name_image, 'IMAGE', image, image_data_path)
+        
+        driver.expression = expression
+
+    # Create expressions for the drivers
+    add_driver(scale_node.inputs[1], "render.resolution_x", "size[0]", "project_res_x", "image_x", "project_res_x / image_x")
+    add_driver(scale_node.inputs[2], "render.resolution_y", "size[1]", "project_res_y", "image_y", "project_res_y / image_y")
+
+    # Refresh the compositor
     node_tree.update_tag()
