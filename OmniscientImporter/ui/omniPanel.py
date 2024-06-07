@@ -27,6 +27,21 @@ def update_active_camera(scene, depsgraph):
     else:
         scene.Active_Camera_Name = "None"
 
+@persistent
+def update_render_settings(self, context):
+    scene = context.scene
+    if scene.is_processing_shot:
+        return
+    current_index = scene.Selected_Shot_Index
+    if current_index < len(scene.Omni_Shots):
+        shot = scene.Omni_Shots[current_index]
+        shot.use_motion_blur = scene.render.use_motion_blur
+        shot.resolution_x = scene.render.resolution_x
+        shot.resolution_y = scene.render.resolution_y
+        shot.frame_start = scene.frame_start
+        shot.frame_end = scene.frame_end
+        shot.fps = scene.render.fps
+
 class OmniShot(PropertyGroup):
     camera: bpy.props.PointerProperty(type=bpy.types.Object)
     mesh: bpy.props.PointerProperty(type=bpy.types.Object)
@@ -39,6 +54,9 @@ class OmniShot(PropertyGroup):
     shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
+
+    # Render settings properties
+    use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
 
 class OmniCollection(PropertyGroup):
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
@@ -173,6 +191,9 @@ class OMNI_OT_SwitchShot(Operator):
                     value = keyframe.value * int(shot.fps)
                     scene.render.motion_blur_shutter = value
                     scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame)
+
+            # Update render settings based on the shot's stored values
+            scene.render.use_motion_blur = shot.use_motion_blur
 
             adjust_timeline_view(context, shot.frame_start, shot.frame_end)
             if shot.collection:
@@ -368,8 +389,14 @@ def register():
         default=True
     )
     bpy.types.Scene.Omni_Collections = bpy.props.CollectionProperty(type=OmniCollection)
+    bpy.types.Scene.is_processing_shot = bpy.props.BoolProperty(
+        name="Is Processing Shot",
+        description="Flag to indicate if a shot is being processed",
+        default=False
+    )
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
+    bpy.app.handlers.depsgraph_update_post.append(update_render_settings)
 
 def unregister():
     del bpy.types.WindowManager.popup_text
@@ -382,3 +409,4 @@ def unregister():
     del bpy.types.Scene.Omni_Collections
 
     bpy.app.handlers.depsgraph_update_post.remove(update_active_camera)
+    bpy.app.handlers.depsgraph_update_post.remove(update_render_settings)

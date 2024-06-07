@@ -5,6 +5,9 @@ from .setupCompositingNodes import setup_compositing_nodes
 import os
 
 def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
+    scene = bpy.context.scene
+    scene.is_processing_shot = True
+
     def get_base_name(filepath):
         return os.path.splitext(os.path.basename(filepath))[0]
 
@@ -137,6 +140,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     shot.resolution_y = height
     shot.shutter_speed = bpy.context.scene.render.motion_blur_shutter
     shot.collection = omniscient_collection
+    shot.use_motion_blur = prefs.enable_motion_blur
 
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
@@ -218,6 +222,8 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
             frame_start=1,
             frame_end=frame_duration
         )
+
+    scene.is_processing_shot = False
 
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
