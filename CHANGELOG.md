@@ -1,4 +1,4 @@
-# 2.0.0 - (2023.06.01)
+# 2.0.0 - (2024.06.01)
 
 ### Features
 - Omniscient panel with import preferences and shot switcher
@@ -18,12 +18,12 @@
 - Popup fbx f-stop
 - Remove popup success
 
-# 1.4.1 - (2023.04.16)
+# 1.4.1 - (2024.04.16)
 
 ### Fix
 - Sync camera of omni v1 files
 
-# 1.4.0 - (2023.04.15)
+# 1.4.0 - (2024.04.15)
 
 ### Features
 - Support omni file v2.0.0
