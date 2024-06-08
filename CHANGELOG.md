@@ -1,3 +1,13 @@
+# 2.1.0 - (2024.06.09)
+
+### Features
+- Bake keyframes preference
+- Scale comp image based on project resolution
+- Save render settings per shot
+
+### Fix
+- Reorder projection nodes on active collection
+
 # 2.0.0 - (2024.06.01)
 
 ### Features
