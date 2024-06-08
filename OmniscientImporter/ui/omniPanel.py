@@ -181,7 +181,7 @@ class OMNI_OT_SwitchShot(Operator):
             scene.render.resolution_x = shot.resolution_x
             scene.render.resolution_y = shot.resolution_y
 
-            reorder_projection_nodes(shot.camera.name)
+            reorder_projection_nodes(shot.camera.name, shot.mesh)
 
             # Set scene's motion blur based on shot's settings 
             if scene.camera and scene.camera.data:

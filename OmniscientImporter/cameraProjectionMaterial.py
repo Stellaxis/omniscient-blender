@@ -366,35 +366,47 @@ def delete_projection_nodes(camera_name):
         # Remove the entry from the scene collection
         scene.camera_projection_nodes.remove(node_index)
 
-def reorder_projection_nodes(camera_name):
+def reorder_projection_nodes(camera_name, mesh):
     scene = bpy.context.scene
+
+    if not mesh:
+        print(f"Error: Mesh not provided or not found.")
+        return
 
     print("Current camera_projection_nodes:")
     for entry in scene.camera_projection_nodes:
         print(f" - Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
 
+    # Filter the nodes to only include those related to the provided mesh
+    mesh_materials = [mat.name for mat in mesh.data.materials]
+    relevant_nodes = [entry for entry in scene.camera_projection_nodes if entry.material_name in mesh_materials]
+
+    if not relevant_nodes:
+        print(f"Error: No projection nodes found for the mesh '{mesh.name}'.")
+        return
+
     # Find the specified CameraProjectionNodes entry
     node_entry = None
-    for entry in scene.camera_projection_nodes:
+    for entry in relevant_nodes:
         if entry.name == camera_name:
             node_entry = entry
             break
 
     if not node_entry:
-        print(f"Error: Camera '{camera_name}' not found in camera_projection_nodes.")
+        print(f"Error: Camera '{camera_name}' not found in relevant projection nodes.")
         return
 
     print(f"Reordering nodes with '{camera_name}' as the first camera.")
 
     # Create a list of node entries ordered with the specified camera first and then reverse the order
-    ordered_nodes = [node_entry] + [entry for entry in scene.camera_projection_nodes if entry.name != camera_name]
+    ordered_nodes = [node_entry] + [entry for entry in relevant_nodes if entry.name != camera_name]
     ordered_nodes.reverse()
 
     print("Ordered nodes (inverted):")
     for entry in ordered_nodes:
         print(f" - Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_node}")
 
-    # Clear the scene collection and add back valid entries
+    # Collect valid entries
     valid_entries = []
     for entry in ordered_nodes:
         if entry.name and entry.material_name and entry.mix_rgb_node:
@@ -413,7 +425,12 @@ def reorder_projection_nodes(camera_name):
 
     print(f"Valid entries before clearing: {len(valid_entries)}")
 
-    scene.camera_projection_nodes.clear()
+    # Remove relevant nodes by index
+    indices_to_remove = [i for i, entry in enumerate(scene.camera_projection_nodes) if entry in relevant_nodes]
+    for index in reversed(indices_to_remove):
+        scene.camera_projection_nodes.remove(index)
+
+    # Re-add valid entries
     for entry in valid_entries:
         new_entry = scene.camera_projection_nodes.add()
         new_entry.name = entry['name']
@@ -427,29 +444,30 @@ def reorder_projection_nodes(camera_name):
 
     print(f"Entries after clearing and re-adding: {len(scene.camera_projection_nodes)}")
 
-    # Disconnect the input [1] of the first mix RGB node
-    first_node_entry = scene.camera_projection_nodes[0]
-    first_material = bpy.data.materials.get(first_node_entry.material_name)
-    if first_material and first_material.node_tree:
-        nodes = first_material.node_tree.nodes
-        first_mix_rgb_node = nodes.get(first_node_entry.mix_rgb_node)
-        if first_mix_rgb_node:
-            # Remove links to input [1] of the first mix RGB node
-            links_to_remove = [link for link in first_material.node_tree.links if link.to_node == first_mix_rgb_node and link.to_socket == first_mix_rgb_node.inputs[1]]
-            for link in links_to_remove:
-                first_material.node_tree.links.remove(link)
-            print(f"Disconnected input [1] of the first mix RGB node: {first_mix_rgb_node.name}")
+    # Disconnect the input [1] of the first mix RGB node from the relevant nodes
+    if valid_entries:
+        first_node_entry = valid_entries[0]
+        first_material = bpy.data.materials.get(first_node_entry['material_name'])
+        if first_material and first_material.node_tree:
+            nodes = first_material.node_tree.nodes
+            first_mix_rgb_node = nodes.get(first_node_entry['mix_rgb_node'])
+            if first_mix_rgb_node:
+                # Remove links to input [1] of the first mix RGB node
+                links_to_remove = [link for link in first_material.node_tree.links if link.to_node == first_mix_rgb_node and link.to_socket == first_mix_rgb_node.inputs[1]]
+                for link in links_to_remove:
+                    first_material.node_tree.links.remove(link)
+                print(f"Disconnected input [1] of the first mix RGB node: {first_mix_rgb_node.name}")
 
     # Reconnect the nodes in the material node tree
     prev_mix_rgb_node = None
-    for entry in scene.camera_projection_nodes:
-        material = bpy.data.materials.get(entry.material_name)
+    for entry in valid_entries:
+        material = bpy.data.materials.get(entry['material_name'])
         if not material or not material.node_tree:
-            print(f"Error: Material '{entry.material_name}' not found or has no node tree.")
+            print(f"Error: Material '{entry['material_name']}' not found or has no node tree.")
             continue
 
         nodes = material.node_tree.nodes
-        mix_rgb_node = nodes.get(entry.mix_rgb_node)
+        mix_rgb_node = nodes.get(entry['mix_rgb_node'])
         if prev_mix_rgb_node and mix_rgb_node:
             # Remove the existing link from the previous mix node to the current mix node
             links_to_remove = [link for link in material.node_tree.links if link.to_node == mix_rgb_node and link.from_node == prev_mix_rgb_node]
@@ -467,10 +485,11 @@ def reorder_projection_nodes(camera_name):
 
     # Ensure the latest mix_rgb_node is connected to the BSDF node
     if prev_mix_rgb_node:
-        material = bpy.data.materials.get(scene.camera_projection_nodes[-1].material_name)
+        last_entry = valid_entries[-1]
+        material = bpy.data.materials.get(last_entry['material_name'])
         if material and material.node_tree:
             nodes = material.node_tree.nodes
-            latest_mix_rgb_node = nodes.get(scene.camera_projection_nodes[-1].mix_rgb_node)
+            latest_mix_rgb_node = nodes.get(last_entry['mix_rgb_node'])
             principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
             if latest_mix_rgb_node and principled_bsdf_node:
                 # Remove existing links to the BSDF node
