@@ -348,11 +348,19 @@ def delete_projection_nodes(camera_name):
                 links_to_remove = [link for link in links if link.to_node == principled_bsdf_node]
                 for link in links_to_remove:
                     links.remove(link)
-                # Create a new link from the latest mix node to the BSDF node
+                    
+                # Create a new link from the latest mix node to the Base Color input of the BSDF node
                 try:
                     links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[0])
                 except IndexError as e:
                     print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+                
+                # Create a new link from the latest mix node to the Emission input of the BSDF node
+                try:
+                    emission_input_index = 19  # Typically the emission input index
+                    links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
+                except IndexError as e:
+                    print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
 
             # Ensure BSDF node is connected to the output node
             if principled_bsdf_node and principled_bsdf_node.outputs and output_node and output_node.inputs:
@@ -502,6 +510,15 @@ def reorder_projection_nodes(camera_name, mesh):
                     print(f"Linked {latest_mix_rgb_node.name} to {principled_bsdf_node.name}")
                 except IndexError as e:
                     print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+
+                # Create a new link from the latest mix node to the Emission input of the BSDF node
+                try:
+                    emission_input_index = 19  # Typically the emission input index
+                    material.node_tree.links.new(latest_mix_rgb_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
+                except IndexError as e:
+                    print(f"Failed to create link: {latest_mix_rgb_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
+                    
+
 
 def register():
     bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
