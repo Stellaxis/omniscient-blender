@@ -7,50 +7,49 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
     material.use_nodes = True
     nodes = material.node_tree.nodes
-
-    if not material.use_nodes:
-        material.use_nodes = True
-
     vertical_spacing = 400.0
 
-    principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
-    if not principled_bsdf_node:
-        principled_bsdf_node = nodes.new(type='ShaderNodeBsdfPrincipled')
-        principled_bsdf_node.location = (400.0, 0.0)
-        principled_bsdf_node.inputs['Metallic'].default_value = 0.5
-        principled_bsdf_node.inputs['Roughness'].default_value = 0.8
+    def get_or_create_node(node_type, location, **kwargs):
+        node = next((node for node in nodes if node.type == node_type), None)
+        if not node:
+            node = nodes.new(type=node_type)
+            node.location = location
+        for attr, value in kwargs.items():
+            setattr(node.inputs[attr], 'default_value', value)
+        return node
 
-    output_node = next((node for node in nodes if node.type == 'OUTPUT_MATERIAL'), None)
-    if not output_node:
-        output_node = nodes.new(type='ShaderNodeOutputMaterial')
-        output_node.location = (600.0, 0.0)
+    principled_bsdf_node = get_or_create_node('BSDF_PRINCIPLED', (400.0, 0.0), Metallic=0.5, Roughness=0.8)
+    output_node = get_or_create_node('OUTPUT_MATERIAL', (600.0, 0.0))
 
     existing_image_nodes = [node for node in nodes if node.type == 'TEX_IMAGE']
     previous_image_node = existing_image_nodes[0] if existing_image_nodes else None
-    previous_mix_node = None
-    existing_mix_nodes = [node for node in nodes if node.type == 'MIX_RGB']
-    if existing_mix_nodes:
-        previous_mix_node = existing_mix_nodes[-1]
+    previous_mix_node = next((node for node in nodes if node.type == 'MIX_RGB'), None)
 
-    tex_coord_node = nodes.new("ShaderNodeTexCoord")
-    tex_coord_node.location = (-1200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
-    tex_coord_node.width = 170.8
-    tex_coord_node.object = new_camera
+    def create_tex_coord_node(camera):
+        node = nodes.new("ShaderNodeTexCoord")
+        node.location = (-1200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+        node.width = 170.8
+        node.object = camera
+        return node
 
-    new_image_texture_node = nodes.new("ShaderNodeTexImage")
-    new_image_texture_node.location = (-750.0, -vertical_spacing * (len(existing_image_nodes) + 1))
-    new_image_texture_node.width = 240.0
-    new_image_texture_node.image = bpy.data.images.get(new_image_name)
-    new_image_texture_node.projection = 'FLAT'
-    new_image_texture_node.interpolation = 'Linear'
-    new_image_texture_node.extension = 'CLIP'
-    new_image_texture_node.image_user.use_auto_refresh = True
-    scene = bpy.context.scene
-    new_image_texture_node.image_user.frame_start = scene.frame_start
-    new_image_texture_node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
+    def create_image_texture_node(image_name):
+        node = nodes.new("ShaderNodeTexImage")
+        node.location = (-750.0, -vertical_spacing * (len(existing_image_nodes) + 1))
+        node.width = 240.0
+        node.image = bpy.data.images.get(image_name)
+        node.projection = 'FLAT'
+        node.interpolation = 'Linear'
+        node.extension = 'CLIP'
+        node.image_user.use_auto_refresh = True
+        scene = bpy.context.scene
+        node.image_user.frame_start = scene.frame_start
+        node.image_user.frame_duration = scene.frame_end - scene.frame_start + 1
+        return node
+
+    tex_coord_node = create_tex_coord_node(new_camera)
+    new_image_texture_node = create_image_texture_node(new_image_name)
 
     node_group = create_projection_shader_group()
-
     camera_projector_group_node = nodes.new("ShaderNodeGroup")
     camera_projector_group_node.location = (-1000.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     camera_projector_group_node.width = 166.7
@@ -58,25 +57,16 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     camera_projector_group_node.node_tree = node_group
 
     def add_camera_driver(node, input_name, camera, data_path):
-        if input_name not in node.inputs:
-            print(f"Error: No input named {input_name} in node {node.name}")
-            return
-
-        input_socket = node.inputs[input_name]
-
         try:
-            driver_fcurve = input_socket.driver_add("default_value")
+            driver_fcurve = node.inputs[input_name].driver_add("default_value")
             driver = driver_fcurve.driver
             driver.type = 'SCRIPTED'
-
             var = driver.variables.new()
             var.name = 'prop'
             var.targets[0].id_type = 'OBJECT'
             var.targets[0].id = camera
             var.targets[0].data_path = data_path
-
             driver.expression = var.name
-
         except AttributeError as e:
             print(f"Failed to add driver to {input_name} on node {node.name}: {e}")
 
@@ -85,15 +75,10 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         add_camera_driver(camera_projector_group_node, "Sensor Size", new_camera, "data.sensor_width")
 
     def create_link(node_tree, from_node, from_socket, to_node, to_socket):
-        if from_node is None or to_node is None:
-            print(f"Linking error: {from_node} to {to_node}")
-            return
         try:
             node_tree.links.new(from_node.outputs[from_socket], to_node.inputs[to_socket])
-        except IndexError as e:
-            print(f"Failed to create link: {from_node.name} [{from_socket}] -> {to_node.name} [{to_socket}]. Error: {e}")
-        except AttributeError as e:
-            print(f"AttributeError: {from_node} or {to_node} is not valid. Error: {e}")
+        except (IndexError, AttributeError) as e:
+            print(f"Failed to create link: {from_node} [{from_socket}] -> {to_node} [{to_socket}]. Error: {e}")
 
     create_link(material.node_tree, tex_coord_node, 3, camera_projector_group_node, 0)
     create_link(material.node_tree, camera_projector_group_node, 0, new_image_texture_node, 0)
@@ -101,7 +86,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node = nodes.new("ShaderNodeMixRGB")
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
-
     shot = bpy.context.scene.Omni_Shots[-1]
     shot.mix_node_name = mix_rgb_visibility_node.name
 
@@ -119,7 +103,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         var.targets[0].id = bpy.context.scene
         var.targets[0].data_path = f"Omni_Shots[{shot_index}].{data_path}"
         driver.expression = var.name
-
         bpy.context.scene.update_tag()
         bpy.context.view_layer.update()
 
@@ -133,14 +116,11 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     create_link(material.node_tree, new_image_texture_node, 0, mix_rgb_visibility_node, 2)
     create_link(material.node_tree, multiply_visibility_node, 0, mix_rgb_visibility_node, 0)
 
-    previous_mix_node = mix_rgb_visibility_node
-
     create_link(material.node_tree, mix_rgb_visibility_node, 0, principled_bsdf_node, 0)
     create_link(material.node_tree, principled_bsdf_node, 0, output_node, 0)
 
     total_rows = len(existing_image_nodes) + 2
     bsdf_vertical_position = -vertical_spacing * total_rows / 2
-
     principled_bsdf_node.location.y = bsdf_vertical_position
     output_node.location.y = bsdf_vertical_position
 
@@ -150,7 +130,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
                 node.hide = True
 
     node_types_to_hide = {"ShaderNodeMath"}
-
     hide_specific_nodes(material.node_tree, node_types_to_hide)
     hide_specific_nodes(node_group, node_types_to_hide)
 
