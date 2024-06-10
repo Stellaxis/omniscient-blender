@@ -43,3 +43,6 @@ def hide_specific_nodes(node_tree, node_types):
     for node in node_tree.nodes:
         if node.bl_idname in node_types:
             node.hide = True
+
+def find_node(nodes, node_type):
+    return next((node for node in nodes if node.type == node_type), None)

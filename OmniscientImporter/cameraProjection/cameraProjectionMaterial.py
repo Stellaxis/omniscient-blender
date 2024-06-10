@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import PropertyGroup
 from bpy.props import StringProperty
-from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes
+from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes, find_node
 from .projection_shader_group import create_projection_shader_group
 
 def create_projection_shader(material_name, new_image_name, new_camera):
@@ -113,9 +113,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     print(f"Added camera projection node: {node_entry.name}, Material: {node_entry.material_name}, Mix Node: {node_entry.mix_rgb_visibility_node}")
 
     return material
-
-def find_node(nodes, node_type):
-    return next((node for node in nodes if node.type == node_type), None)
 
 def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
     if not material or not material.node_tree:
