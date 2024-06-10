@@ -1,7 +1,7 @@
 import bpy
 from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
-from ..cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
+from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import load_custom_icons, preview_collections
 

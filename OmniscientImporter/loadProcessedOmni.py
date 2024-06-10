@@ -1,6 +1,6 @@
 import bpy
 from .ui.infoPopups import showTextPopup
-from .cameraProjectionMaterial import create_projection_shader
+from .cameraProjection.cameraProjectionMaterial import create_projection_shader
 from .setupCompositingNodes import setup_compositing_nodes
 import os
 
