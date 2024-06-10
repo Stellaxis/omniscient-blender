@@ -4,10 +4,39 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import load_custom_icons, preview_collections
+from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update
+
+# -------------------------------------------------------------------
+# Property Groups
+# -------------------------------------------------------------------
 
 class ShutterSpeedKeyframe(PropertyGroup):
     frame: bpy.props.FloatProperty(name="Frame")
     value: bpy.props.FloatProperty(name="Value")
+
+class OmniShot(PropertyGroup):
+    camera: bpy.props.PointerProperty(type=bpy.types.Object)
+    mesh: bpy.props.PointerProperty(type=bpy.types.Object)
+    video: bpy.props.PointerProperty(type=bpy.types.Image)
+    fps: bpy.props.FloatProperty(name="FPS", default=24.0)
+    frame_start: bpy.props.IntProperty(name="Start Frame", default=1)
+    frame_end: bpy.props.IntProperty(name="End Frame", default=250)
+    resolution_x: bpy.props.IntProperty(name="Resolution X", default=1920)
+    resolution_y: bpy.props.IntProperty(name="Resolution Y", default=1080)
+    shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
+    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+    camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
+
+    # Render settings properties
+    use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
+
+class OmniCollection(PropertyGroup):
+    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+
+
+# -------------------------------------------------------------------
+# Handlers
+# -------------------------------------------------------------------
 
 @persistent
 def update_active_camera(scene, depsgraph):
@@ -42,24 +71,9 @@ def update_render_settings(self, context):
         shot.frame_end = scene.frame_end
         shot.fps = scene.render.fps
 
-class OmniShot(PropertyGroup):
-    camera: bpy.props.PointerProperty(type=bpy.types.Object)
-    mesh: bpy.props.PointerProperty(type=bpy.types.Object)
-    video: bpy.props.PointerProperty(type=bpy.types.Image)
-    fps: bpy.props.FloatProperty(name="FPS", default=24.0)
-    frame_start: bpy.props.IntProperty(name="Start Frame", default=1)
-    frame_end: bpy.props.IntProperty(name="End Frame", default=250)
-    resolution_x: bpy.props.IntProperty(name="Resolution X", default=1920)
-    resolution_y: bpy.props.IntProperty(name="Resolution Y", default=1080)
-    shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
-    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-    camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
-
-    # Render settings properties
-    use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
-
-class OmniCollection(PropertyGroup):
-    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+# -------------------------------------------------------------------
+# Panels
+# -------------------------------------------------------------------
 
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
@@ -122,6 +136,44 @@ class OMNI_PT_ShotsPanel(Panel):
         # Add the list UI
         layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
 
+class OMNI_PT_VersionWarningPanel(Panel):
+    bl_label = "Version Warning"
+    bl_idname = "OMNI_PT_version_warning"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Omniscient'
+    bl_order = 2
+
+    @classmethod
+    def poll(cls, context):
+        wm = context.window_manager
+        return bool(wm.popup_text)
+
+    def draw(self, context):
+        layout = self.layout
+        wm = context.window_manager
+
+        if wm.popup_text:
+            lines = wm.popup_text.split('\n')
+            if lines:
+                # First line with error icon
+                row = layout.row()
+                row.alert = True
+                row.label(text=lines[0], icon='ERROR')
+                
+                # Center the remaining lines without error icon
+                for line in lines[1:]:
+                    row = layout.row()
+                    row.alignment = 'CENTER'
+                    row.label(text=line)
+            
+            row = layout.row()
+            row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+
+# -------------------------------------------------------------------
+# UI Lists
+# -------------------------------------------------------------------
+
 class OMNI_UL_ShotList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
         shot = item
@@ -163,6 +215,10 @@ class OMNI_UL_ShotList(UIList):
         bpy.ops.object.switch_shot()
         return super().invoke(context, event)
 
+# -------------------------------------------------------------------
+# Operators
+# -------------------------------------------------------------------
+
 class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
     bl_label = "Switch Shot"
@@ -177,7 +233,7 @@ class OMNI_OT_SwitchShot(Operator):
             scene.camera = shot.camera
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
-            scene.render.fps = int(shot.fps)  # Convert fps to int
+            scene.render.fps = int(shot.fps)
             scene.render.resolution_x = shot.resolution_x
             scene.render.resolution_y = shot.resolution_y
 
@@ -251,116 +307,9 @@ class OMNI_OT_ToggleCameraProjection(Operator):
         update_related_drivers(shot)
         return {'FINISHED'}
 
-class OMNI_PT_VersionWarningPanel(Panel):
-    bl_label = "Version Warning"
-    bl_idname = "OMNI_PT_version_warning"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Omniscient'
-    bl_order = 2
-
-    @classmethod
-    def poll(cls, context):
-        wm = context.window_manager
-        return bool(wm.popup_text)
-
-    def draw(self, context):
-        layout = self.layout
-        wm = context.window_manager
-
-        if wm.popup_text:
-            lines = wm.popup_text.split('\n')
-            if lines:
-                # First line with error icon
-                row = layout.row()
-                row.alert = True
-                row.label(text=lines[0], icon='ERROR')
-                
-                # Center the remaining lines without error icon
-                for line in lines[1:]:
-                    row = layout.row()
-                    row.alignment = 'CENTER'
-                    row.label(text=line)
-            
-            row = layout.row()
-            row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
-
-def hide_omniscient_collections(scene):
-    for omni_collection in scene.Omni_Collections:
-        if omni_collection.collection:
-            omni_collection.collection.hide_viewport = True
-            omni_collection.collection.hide_render = True
-
-def clear_motion_blur_keyframes(scene):
-    # Ensure the scene's animation data exists
-    if scene.animation_data:
-        action = scene.animation_data.action
-        if action:
-            # Find the fcurve for motion_blur_shutter in scene.render and clear its keyframes
-            for fcurve in action.fcurves:
-                if fcurve.data_path == "render.motion_blur_shutter":
-                    action.fcurves.remove(fcurve)
-                    break
-
-def adjust_timeline_view(context, frame_start, frame_end):
-    # Set the preview range
-    context.scene.use_preview_range = True
-    context.scene.frame_preview_start = frame_start
-    context.scene.frame_preview_end = frame_end
-
-    # Adjust the timeline view to fit the entire preview range
-    for area in context.screen.areas:
-        if area.type == 'DOPESHEET_EDITOR':
-            override = context.copy()
-            override["area"] = area
-            override["region"] = area.regions[-1]
-            with context.temp_override(**override):
-                bpy.ops.action.view_all()
-            break
-
-def selected_shot_index_update(self, context):
-    current_index = context.scene.Selected_Shot_Index
-    current_shot = context.scene.Omni_Shots[current_index]
-    
-    if context.scene.camera != current_shot.camera:
-        bpy.ops.object.switch_shot(index=current_index)
-
-def add_driver_for_multiply(node, shot_index, data_path):
-    driver = node.inputs[1].driver_add("default_value").driver
-    driver.type = 'SCRIPTED'
-    var = driver.variables.new()
-    var.name = 'projection_multiply'
-    var.targets[0].id_type = 'SCENE'
-    var.targets[0].id = bpy.context.scene
-    var.targets[0].data_path = f"Omni_Shots[{shot_index}].{data_path}"
-    driver.expression = var.name
-
-    # Force update dependencies
-    bpy.context.scene.update_tag()
-    bpy.context.view_layer.update()
-
-def update_related_drivers(shot):
-    # Debug print to trace function call
-    print(f"Updating drivers for shot {shot.name}")
-
-    def update_driver(driver):
-        if driver:
-            driver.expression = driver.expression  # Or update to any new expression
-
-    # Update drivers related to the shot's mesh
-    if shot.mesh and shot.mesh.type == 'MESH':
-        for mat in shot.mesh.data.materials:
-            if mat and mat.node_tree and mat.node_tree.animation_data:
-                for fcurve in mat.node_tree.animation_data.drivers:
-                    # Check if the driver is for an input socket's default value
-                    data_path = fcurve.data_path
-                    if '.inputs[' in data_path and data_path.endswith('default_value'):
-                        update_driver(fcurve.driver)
-                        
-def update_driver(obj):
-    if obj.animation_data:
-        for fc in obj.animation_data.drivers:
-            fc.driver.expression = fc.driver.expression
+# -------------------------------------------------------------------
+# Registration
+# -------------------------------------------------------------------
 
 def register():
     bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
