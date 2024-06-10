@@ -147,6 +147,9 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     return material
 
+def find_node(nodes, node_type):
+    return next((node for node in nodes if node.type == node_type), None)
+
 def delete_projection_nodes(camera_name):
     scene = bpy.context.scene
     node_index = scene.camera_projection_nodes.find(camera_name)
@@ -158,8 +161,8 @@ def delete_projection_nodes(camera_name):
             links = material.node_tree.links
             node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_visibility_node, node_entry.multiply_visibility_node]
             
-            principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
-            output_node = next((node for node in nodes if node.type == 'OUTPUT_MATERIAL'), None)
+            principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
+            output_node = find_node(nodes, 'OUTPUT_MATERIAL')
 
             # Find the previous and next ShaderNodeMixRGB nodes
             prev_mix_rgb_visibility_node = None
@@ -357,7 +360,7 @@ def reorder_projection_nodes(camera_name, mesh):
         if material and material.node_tree:
             nodes = material.node_tree.nodes
             latest_mix_rgb_visibility_node = nodes.get(last_entry['mix_rgb_visibility_node'])
-            principled_bsdf_node = next((node for node in nodes if node.type == 'BSDF_PRINCIPLED'), None)
+            principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
             if latest_mix_rgb_visibility_node and principled_bsdf_node:
                 # Remove existing links to the BSDF node
                 links_to_remove = [link for link in material.node_tree.links if link.to_node == principled_bsdf_node]
@@ -376,8 +379,6 @@ def reorder_projection_nodes(camera_name, mesh):
                     material.node_tree.links.new(latest_mix_rgb_visibility_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
                 except IndexError as e:
                     print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
-                    
-
 
 def register():
     bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
