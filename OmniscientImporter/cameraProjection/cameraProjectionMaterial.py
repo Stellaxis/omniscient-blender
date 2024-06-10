@@ -11,7 +11,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     vertical_spacing = 400.0
 
     principled_bsdf_node = get_or_create_node(nodes, 'BSDF_PRINCIPLED', (400.0, 0.0), Metallic=0.5, Roughness=0.8)
-    output_node = get_or_create_node(nodes, 'OUTPUT_MATERIAL', (600.0, 0.0))
+    output_node = get_or_create_node(nodes, 'OUTPUT_MATERIAL', (700.0, 0.0))
 
     existing_image_nodes = [node for node in nodes if node.type == 'TEX_IMAGE']
     previous_image_node = existing_image_nodes[0] if existing_image_nodes else None

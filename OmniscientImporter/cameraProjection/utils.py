@@ -4,7 +4,7 @@ def get_or_create_node(nodes, node_type, location, **kwargs):
     node = next((node for node in nodes if node.type == node_type), None)
     if not node:
         node = nodes.new(type=node_type)
-        node.location = location
+    node.location = location
     for attr, value in kwargs.items():
         setattr(node.inputs[attr], 'default_value', value)
     return node
