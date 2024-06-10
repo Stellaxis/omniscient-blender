@@ -15,8 +15,13 @@ def create_link(node_tree, from_node, from_socket, to_node, to_socket):
     except (IndexError, AttributeError) as e:
         print(f"Failed to create link: {from_node} [{from_socket}] -> {to_node} [{to_socket}]. Error: {e}")
 
-def add_driver(node, input_name, target, target_id_type, data_path):
+def add_driver(node, input_name_or_index, target, target_id_type, data_path):
     try:
+        if isinstance(input_name_or_index, int):
+            input_name = node.inputs[input_name_or_index].name
+        else:
+            input_name = input_name_or_index
+        
         if input_name not in node.inputs:
             raise KeyError(f"Input '{input_name}' not found in node '{node.name}'")
         

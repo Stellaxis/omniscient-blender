@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import PropertyGroup
 from bpy.props import StringProperty
+from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes
 from .projection_shader_group import create_projection_shader_group
 
 def create_projection_shader(material_name, new_image_name, new_camera):
@@ -9,17 +10,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     nodes = material.node_tree.nodes
     vertical_spacing = 400.0
 
-    def get_or_create_node(node_type, location, **kwargs):
-        node = next((node for node in nodes if node.type == node_type), None)
-        if not node:
-            node = nodes.new(type=node_type)
-            node.location = location
-        for attr, value in kwargs.items():
-            setattr(node.inputs[attr], 'default_value', value)
-        return node
-
-    principled_bsdf_node = get_or_create_node('BSDF_PRINCIPLED', (400.0, 0.0), Metallic=0.5, Roughness=0.8)
-    output_node = get_or_create_node('OUTPUT_MATERIAL', (600.0, 0.0))
+    principled_bsdf_node = get_or_create_node(nodes, 'BSDF_PRINCIPLED', (400.0, 0.0), Metallic=0.5, Roughness=0.8)
+    output_node = get_or_create_node(nodes, 'OUTPUT_MATERIAL', (600.0, 0.0))
 
     existing_image_nodes = [node for node in nodes if node.type == 'TEX_IMAGE']
     previous_image_node = existing_image_nodes[0] if existing_image_nodes else None
@@ -56,29 +48,9 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     camera_projector_group_node.label = 'Camera Projector Omni'
     camera_projector_group_node.node_tree = node_group
 
-    def add_camera_driver(node, input_name, camera, data_path):
-        try:
-            driver_fcurve = node.inputs[input_name].driver_add("default_value")
-            driver = driver_fcurve.driver
-            driver.type = 'SCRIPTED'
-            var = driver.variables.new()
-            var.name = 'prop'
-            var.targets[0].id_type = 'OBJECT'
-            var.targets[0].id = camera
-            var.targets[0].data_path = data_path
-            driver.expression = var.name
-        except AttributeError as e:
-            print(f"Failed to add driver to {input_name} on node {node.name}: {e}")
-
     if new_camera:
-        add_camera_driver(camera_projector_group_node, "Focal Length", new_camera, "data.lens")
-        add_camera_driver(camera_projector_group_node, "Sensor Size", new_camera, "data.sensor_width")
-
-    def create_link(node_tree, from_node, from_socket, to_node, to_socket):
-        try:
-            node_tree.links.new(from_node.outputs[from_socket], to_node.inputs[to_socket])
-        except (IndexError, AttributeError) as e:
-            print(f"Failed to create link: {from_node} [{from_socket}] -> {to_node} [{to_socket}]. Error: {e}")
+        add_driver(camera_projector_group_node, "Focal Length", new_camera, 'OBJECT', "data.lens")
+        add_driver(camera_projector_group_node, "Sensor Size", new_camera, 'OBJECT', "data.sensor_width")
 
     create_link(material.node_tree, tex_coord_node, 3, camera_projector_group_node, 0)
     create_link(material.node_tree, camera_projector_group_node, 0, new_image_texture_node, 0)
@@ -123,11 +95,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     bsdf_vertical_position = -vertical_spacing * total_rows / 2
     principled_bsdf_node.location.y = bsdf_vertical_position
     output_node.location.y = bsdf_vertical_position
-
-    def hide_specific_nodes(node_tree, node_types):
-        for node in node_tree.nodes:
-            if node.bl_idname in node_types:
-                node.hide = True
 
     node_types_to_hide = {"ShaderNodeMath"}
     hide_specific_nodes(material.node_tree, node_types_to_hide)
