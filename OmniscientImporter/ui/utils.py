@@ -56,9 +56,24 @@ def update_driver(obj):
         for fc in obj.animation_data.drivers:
             fc.driver.expression = fc.driver.expression
 
+def get_selected_collection_and_shot(scene, collection_index=None, shot_index=None):
+    collection_index = collection_index if collection_index is not None else scene.Selected_Collection_Index
+    shot_index = shot_index if shot_index is not None else scene.Selected_Shot_Index
+
+    if collection_index < len(scene.Omni_Collections):
+        collection = scene.Omni_Collections[collection_index]
+        if shot_index < len(collection.shots):
+            return collection, collection.shots[shot_index]
+    return None, None
+
 def selected_shot_index_update(self, context):
-    current_index = context.scene.Selected_Shot_Index
-    current_shot = context.scene.Omni_Shots[current_index]
+    scene = context.scene
+    collection, current_shot = get_selected_collection_and_shot(scene)
     
-    if context.scene.camera != current_shot.camera:
-        bpy.ops.object.switch_shot(index=current_index)
+    if collection and current_shot:
+        if scene.camera != current_shot.camera:
+            bpy.ops.object.switch_shot(index=scene.Selected_Shot_Index, collection_index=scene.Selected_Collection_Index)
+
+def selected_collection_index_update(self, context):
+    scene = context.scene
+    # Execute action when selected collection index changes

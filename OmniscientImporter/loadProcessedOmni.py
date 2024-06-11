@@ -128,8 +128,19 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
         bpy.context.scene.render.motion_blur_shutter = 0.5
         bpy.context.scene.render.use_motion_blur = True
 
+    # Check if the collection already exists in Omni_Collections
+    omni_collection = None
+    for collection in bpy.context.scene.Omni_Collections:
+        if collection.collection == omniscient_collection:
+            omni_collection = collection
+            break
+
+    if omni_collection is None:
+        omni_collection = bpy.context.scene.Omni_Collections.add()
+        omni_collection.collection = omniscient_collection
+
     # Store the shot settings
-    shot = bpy.context.scene.Omni_Shots.add()
+    shot = omni_collection.shots.add()
     shot.camera = imported_cam
     shot.mesh = imported_mesh
     shot.video = img
@@ -200,14 +211,11 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     save_camera_settings(shot, camera_settings)
 
     # Assign a default name to the shot
-    shot_index = len(bpy.context.scene.Omni_Shots) - 1
+    shot_index = len(omni_collection.shots) - 1
     shot.name = f"Shot {shot_index + 1:02d}"
 
     # Auto-select the imported shot
     bpy.context.scene.Selected_Shot_Index = shot_index
-
-    omni_collection = bpy.context.scene.Omni_Collections.add()
-    omni_collection.collection = omniscient_collection
 
     hide_omniscient_collections(bpy.context.scene)
     omniscient_collection.hide_viewport = False

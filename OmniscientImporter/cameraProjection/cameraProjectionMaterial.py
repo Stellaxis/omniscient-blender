@@ -3,6 +3,7 @@ from bpy.types import PropertyGroup
 from bpy.props import StringProperty
 from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes, find_node
 from .projection_shader_group import create_projection_shader_group
+from ..ui.utils import get_selected_collection_and_shot
 
 def create_projection_shader(material_name, new_image_name, new_camera):
     material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
@@ -58,28 +59,31 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node = nodes.new("ShaderNodeMixRGB")
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
-    shot = bpy.context.scene.Omni_Shots[-1]
-    shot.mix_node_name = mix_rgb_visibility_node.name
+
+    collection, shot = get_selected_collection_and_shot(bpy.context.scene)
+    if shot:
+        shot.mix_node_name = mix_rgb_visibility_node.name
 
     multiply_visibility_node = nodes.new("ShaderNodeMath")
     multiply_visibility_node.location = (-400.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     multiply_visibility_node.operation = 'MULTIPLY'
     create_link(material.node_tree, new_image_texture_node, 1, multiply_visibility_node, 0)
 
-    def add_driver_for_multiply(node, shot_index, data_path):
+    def add_driver_for_multiply(node, collection_index, shot_index, data_path):
         driver = node.inputs[1].driver_add("default_value").driver
         driver.type = 'SCRIPTED'
         var = driver.variables.new()
         var.name = 'projection_multiply'
         var.targets[0].id_type = 'SCENE'
         var.targets[0].id = bpy.context.scene
-        var.targets[0].data_path = f"Omni_Shots[{shot_index}].{data_path}"
+        var.targets[0].data_path = f"Omni_Collections[{collection_index}].shots[{shot_index}].{data_path}"
         driver.expression = var.name
         bpy.context.scene.update_tag()
         bpy.context.view_layer.update()
 
-    shot_index = bpy.context.scene.Omni_Shots.find(shot.name)
-    add_driver_for_multiply(multiply_visibility_node, shot_index, "camera_projection_multiply")
+    collection_index = bpy.context.scene.Selected_Collection_Index
+    shot_index = bpy.context.scene.Selected_Shot_Index
+    add_driver_for_multiply(multiply_visibility_node, collection_index, shot_index, "camera_projection_multiply")
 
     if previous_mix_node:
         create_link(material.node_tree, previous_mix_node, 0, mix_rgb_visibility_node, 1)

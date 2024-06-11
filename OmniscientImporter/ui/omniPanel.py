@@ -4,7 +4,7 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import load_custom_icons, preview_collections
-from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update
+from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot, selected_collection_index_update
 
 # -------------------------------------------------------------------
 # Property Groups
@@ -26,13 +26,12 @@ class OmniShot(PropertyGroup):
     shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
-
-    # Render settings properties
     use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
 
 class OmniCollection(PropertyGroup):
+    shots: bpy.props.CollectionProperty(type=OmniShot)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-
+    expanded: bpy.props.BoolProperty(name="Expanded", default=False)
 
 # -------------------------------------------------------------------
 # Handlers
@@ -43,16 +42,32 @@ def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
     if active_camera:
         scene.Active_Camera_Name = active_camera.name
-        current_index = scene.Selected_Shot_Index
-        current_shot_camera = scene.Omni_Shots[current_index].camera if current_index < len(scene.Omni_Shots) else None
+        
+        found_shot = None
+        found_collection_index = -1
+        found_shot_index = -1
 
-        if active_camera != current_shot_camera:
-            for index, shot in enumerate(scene.Omni_Shots):
+        for collection_index, collection in enumerate(scene.Omni_Collections):
+            for shot_index, shot in enumerate(collection.shots):
                 if shot.camera == active_camera:
-                    if scene.Selected_Shot_Index != index:
-                        scene.Selected_Shot_Index = index
-                        bpy.ops.object.switch_shot(index=index)
+                    found_shot = shot
+                    found_collection_index = collection_index
+                    found_shot_index = shot_index
                     break
+            if found_shot:
+                break
+
+        if found_shot:
+            current_collection_index = scene.Selected_Collection_Index
+            current_shot_index = scene.Selected_Shot_Index
+
+            if (current_collection_index >= len(scene.Omni_Collections) or
+                current_shot_index >= len(scene.Omni_Collections[current_collection_index].shots) or
+                found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
+                
+                scene.Selected_Collection_Index = found_collection_index
+                scene.Selected_Shot_Index = found_shot_index
+                bpy.ops.object.switch_shot(index=found_shot_index, collection_index=found_collection_index)
     else:
         scene.Active_Camera_Name = "None"
 
@@ -61,15 +76,20 @@ def update_render_settings(self, context):
     scene = context.scene
     if scene.is_processing_shot:
         return
-    current_index = scene.Selected_Shot_Index
-    if current_index < len(scene.Omni_Shots):
-        shot = scene.Omni_Shots[current_index]
-        shot.use_motion_blur = scene.render.use_motion_blur
-        shot.resolution_x = scene.render.resolution_x
-        shot.resolution_y = scene.render.resolution_y
-        shot.frame_start = scene.frame_start
-        shot.frame_end = scene.frame_end
-        shot.fps = scene.render.fps
+    
+    current_collection_index = scene.Selected_Collection_Index
+    current_shot_index = scene.Selected_Shot_Index
+
+    if current_collection_index < len(scene.Omni_Collections):
+        collection = scene.Omni_Collections[current_collection_index]
+        if current_shot_index < len(collection.shots):
+            shot = collection.shots[current_shot_index]
+            shot.use_motion_blur = scene.render.use_motion_blur
+            shot.resolution_x = scene.render.resolution_x
+            shot.resolution_y = scene.render.resolution_y
+            shot.frame_start = scene.frame_start
+            shot.frame_end = scene.frame_end
+            shot.fps = scene.render.fps
 
 # -------------------------------------------------------------------
 # Panels
@@ -133,8 +153,13 @@ class OMNI_PT_ShotsPanel(Panel):
         layout = self.layout
         scene = context.scene
 
-        # Add the list UI
-        layout.template_list("OMNI_UL_ShotList", "", scene, "Omni_Shots", scene, "Selected_Shot_Index")
+        # Get the selected collection
+        collection_index = scene.Selected_Collection_Index
+        if collection_index < len(scene.Omni_Collections):
+            collection = scene.Omni_Collections[collection_index]
+            layout.template_list("OMNI_UL_ShotList", "", collection, "shots", scene, "Selected_Shot_Index")
+        else:
+            layout.label(text="No collection selected")
 
 class OMNI_PT_VersionWarningPanel(Panel):
     bl_label = "Version Warning"
@@ -224,12 +249,16 @@ class OMNI_OT_SwitchShot(Operator):
     bl_label = "Switch Shot"
 
     index: bpy.props.IntProperty()
+    collection_index: bpy.props.IntProperty()
 
     def execute(self, context):
         scene = context.scene
+        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
-        if shot_index < len(scene.Omni_Shots):
-            shot = scene.Omni_Shots[shot_index]
+
+        collection, shot = get_selected_collection_and_shot(scene, collection_index, shot_index)
+
+        if collection and shot:
             scene.camera = shot.camera
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
@@ -239,7 +268,7 @@ class OMNI_OT_SwitchShot(Operator):
 
             reorder_projection_nodes(shot.camera.name, shot.mesh)
 
-            # Set scene's motion blur based on shot's settings 
+            # Set scene's motion blur based on shot's settings
             if scene.camera and scene.camera.data:
                 clear_motion_blur_keyframes(scene)
                 for keyframe in shot.shutter_speed_keyframes:
@@ -265,28 +294,34 @@ class OMNI_OT_DeleteShot(Operator):
     bl_label = "Delete Shot"
 
     index: bpy.props.IntProperty()
+    collection_index: bpy.props.IntProperty()
 
     def execute(self, context):
         scene = context.scene
-        if 0 <= self.index < len(scene.Omni_Shots):
-            shot = scene.Omni_Shots[self.index]
+        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
-            delete_projection_nodes(shot.camera.name)
+        if collection_index < len(scene.Omni_Collections):
+            collection = scene.Omni_Collections[collection_index]
+            if 0 <= shot_index < len(collection.shots):
+                shot = collection.shots[shot_index]
 
-            # Unlink camera from scene and collection
-            if shot.camera:
-                for coll in shot.camera.users_collection:
-                    coll.objects.unlink(shot.camera)
-                bpy.data.objects.remove(shot.camera)
+                delete_projection_nodes(shot.camera.name)
 
-            # Remove the shot
-            scene.Omni_Shots.remove(self.index)
+                # Unlink camera from scene and collection
+                if shot.camera:
+                    for coll in shot.camera.users_collection:
+                        coll.objects.unlink(shot.camera)
+                    bpy.data.objects.remove(shot.camera)
 
-            # Adjust the selected index
-            if self.index == scene.Selected_Shot_Index:
-                scene.Selected_Shot_Index = min(self.index, len(scene.Omni_Shots) - 1)
+                # Remove the shot
+                collection.shots.remove(shot_index)
 
-            return {'FINISHED'}
+                # Adjust the selected index
+                if shot_index == scene.Selected_Shot_Index:
+                    scene.Selected_Shot_Index = min(shot_index, len(collection.shots) - 1)
+
+                return {'FINISHED'}
         return {'CANCELLED'}
 
 class OMNI_OT_ToggleCameraProjection(Operator):
@@ -294,17 +329,24 @@ class OMNI_OT_ToggleCameraProjection(Operator):
     bl_label = "Toggle Camera Projection"
 
     index: bpy.props.IntProperty()
+    collection_index: bpy.props.IntProperty()
 
     def execute(self, context):
         scene = context.scene
-        shot = scene.Omni_Shots[self.index]
-        shot.camera_projection_multiply = 1.0 if shot.camera_projection_multiply == 0.0 else 0.0
-        
-        # Debug print to trace property update
-        print(f"Toggled camera_projection_multiply for shot {shot.name} to {shot.camera_projection_multiply}")
+        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
-        # Force update dependencies
-        update_related_drivers(shot)
+        if collection_index < len(scene.Omni_Collections):
+            collection = scene.Omni_Collections[collection_index]
+            if 0 <= shot_index < len(collection.shots):
+                shot = collection.shots[shot_index]
+                shot.camera_projection_multiply = 1.0 if shot.camera_projection_multiply == 0.0 else 0.0
+                
+                # Debug print to trace property update
+                print(f"Toggled camera_projection_multiply for shot {shot.camera.name} to {shot.camera_projection_multiply}")
+
+                # Force update dependencies
+                update_related_drivers(shot)
         return {'FINISHED'}
 
 # -------------------------------------------------------------------
@@ -331,7 +373,11 @@ def register():
         default=0,
         update=selected_shot_index_update
     )
-    bpy.types.Scene.Omni_Shots = bpy.props.CollectionProperty(type=OmniShot)
+    bpy.types.Scene.Selected_Collection_Index = bpy.props.IntProperty(
+        name="Selected Collection Index",
+        default=0,
+        update=selected_collection_index_update
+    )
     bpy.types.Scene.auto_switch_shot = bpy.props.BoolProperty(
         name="Auto Switch Shot",
         description="Automatically switch shot when selecting an OmniShot",
@@ -352,8 +398,8 @@ def unregister():
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
     del bpy.types.Scene.Active_Camera_Name
-    del bpy.types.Scene.Omni_Shots
     del bpy.types.Scene.Selected_Shot_Index
+    del bpy.types.Scene.Selected_Collection_Index
     del bpy.types.Scene.auto_switch_shot
     del bpy.types.Scene.Omni_Collections
 
