@@ -11,8 +11,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     nodes = material.node_tree.nodes
     vertical_spacing = 400.0
 
-    principled_bsdf_node = get_or_create_node(nodes, 'BSDF_PRINCIPLED', (400.0, 0.0), Metallic=0.5, Roughness=0.8)
-    output_node = get_or_create_node(nodes, 'OUTPUT_MATERIAL', (700.0, 0.0))
+    principled_bsdf_node = get_or_create_node(nodes, 'BSDF_PRINCIPLED', (800.0, 0.0), Metallic=0.5, Roughness=0.8)
+    output_node = get_or_create_node(nodes, 'OUTPUT_MATERIAL', (1100.0, 0.0))
 
     existing_image_nodes = [node for node in nodes if node.type == 'TEX_IMAGE']
     previous_image_node = existing_image_nodes[0] if existing_image_nodes else None
@@ -59,6 +59,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node = nodes.new("ShaderNodeMixRGB")
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
+    mix_rgb_visibility_node.name = "MixRGBVisibilityNode"  # Assign a unique name
 
     collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
 
@@ -68,6 +69,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     multiply_visibility_node = nodes.new("ShaderNodeMath")
     multiply_visibility_node.location = (-400.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     multiply_visibility_node.operation = 'MULTIPLY'
+    multiply_visibility_node.name = "MultiplyVisibilityNode"  # Assign a unique name
     create_link(material.node_tree, new_image_texture_node, 1, multiply_visibility_node, 0)
 
     def add_driver_for_multiply(node, collection_index, shot_index, data_path):
@@ -99,6 +101,52 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     principled_bsdf_node.location.y = bsdf_vertical_position
     output_node.location.y = bsdf_vertical_position
 
+    # -------------------------------------------------------------------
+    # Emission control (only create if it doesn't already exist)
+    # -------------------------------------------------------------------
+
+    mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
+
+    if not mix_rgb_emission_node:
+        # Create a new ColorRamp node
+        color_ramp_emission_node = nodes.new("ShaderNodeValToRGB")
+        color_ramp_emission_node.location = (100.0, bsdf_vertical_position - 350)
+        color_ramp_emission_node.name = "ColorRampEmissionNode"  # Assign a unique name
+
+        # Create a new Value node
+        value_node = nodes.new("ShaderNodeValue")
+        value_node.location = (200.0, bsdf_vertical_position - 650)
+        value_node.outputs[0].default_value = 1.0
+        value_node.name = "ValueEmissionNode"  # Assign a unique name
+
+        # Create a new multiply node for emission
+        multiply_emission_node = nodes.new("ShaderNodeMath")
+        multiply_emission_node.location = (400.0, bsdf_vertical_position - 500)
+        multiply_emission_node.operation = 'MULTIPLY'
+        multiply_emission_node.name = "MultiplyEmissionNode"  # Assign a unique name
+        
+        # Create a new MixRGB node for the new configuration
+        mix_rgb_emission_node = nodes.new("ShaderNodeMixRGB")
+        mix_rgb_emission_node.location = (600.0, bsdf_vertical_position - 550.0)
+        mix_rgb_emission_node.hide = True
+        mix_rgb_emission_node.name = "MixRGBEmissionNode"  # Assign a unique name
+
+        # Link nodes together
+        create_link(material.node_tree, color_ramp_emission_node, 0, multiply_emission_node, 0)
+        create_link(material.node_tree, value_node, 0, multiply_emission_node, 1)
+        create_link(material.node_tree, multiply_emission_node, 0, mix_rgb_emission_node, 0)
+        create_link(material.node_tree, value_node, 0, mix_rgb_emission_node, 1)
+    else:
+        # Update positions if nodes already exist
+        color_ramp_emission_node = find_node(nodes, 'VALTORGB', 'ColorRampEmissionNode')
+        value_node = find_node(nodes, 'VALUE', 'ValueEmissionNode')
+        multiply_emission_node = find_node(nodes, 'MATH', 'MultiplyEmissionNode')
+
+        color_ramp_emission_node.location = (100.0, bsdf_vertical_position - 350)
+        value_node.location = (200.0, bsdf_vertical_position - 650)
+        multiply_emission_node.location = (400.0, bsdf_vertical_position - 500)
+        mix_rgb_emission_node.location = (600.0, bsdf_vertical_position - 550.0)
+    
     node_types_to_hide = {"ShaderNodeMath"}
     hide_specific_nodes(material.node_tree, node_types_to_hide)
     hide_specific_nodes(node_group, node_types_to_hide)
@@ -138,12 +186,17 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         except IndexError as e:
             print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
 
-        # Create a new link from the latest mix node to the Emission input of the BSDF node
-        try:
-            emission_input_index = 19  # Typically the emission input index
-            links.new(latest_mix_rgb_visibility_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
-        except IndexError as e:
-            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
+        # Create a new link from the mix_rgb_emission_node to the Emission input of the BSDF node
+        mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
+        if mix_rgb_emission_node:
+            try:
+                emission_input_index = 20  # Typically the emission input index
+                links.new(mix_rgb_emission_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
+                print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [Emission Input {emission_input_index}]")
+            except IndexError as e:
+                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
+        else:
+            print("Mix RGB Emission Node not found")
 
     # Ensure BSDF node is connected to the output node
     if principled_bsdf_node and principled_bsdf_node.outputs and output_node and output_node.inputs:

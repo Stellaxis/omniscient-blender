@@ -44,5 +44,7 @@ def hide_specific_nodes(node_tree, node_types):
         if node.bl_idname in node_types:
             node.hide = True
 
-def find_node(nodes, node_type):
+def find_node(nodes, node_type, node_name=None):
+    if node_name:
+        return next((node for node in nodes if node.type == node_type and node.name == node_name), None)
     return next((node for node in nodes if node.type == node_type), None)
