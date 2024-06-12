@@ -6,6 +6,9 @@ from .projection_shader_group import create_projection_shader_group
 from ..ui.utils import find_collection_and_shot_index_by_camera
 
 def create_projection_shader(material_name, new_image_name, new_camera):
+        
+    collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
+
     material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
     material.use_nodes = True
     nodes = material.node_tree.nodes
@@ -60,8 +63,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
     mix_rgb_visibility_node.name = "MixRGBVisibilityNode" 
-
-    collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
 
     if shot:
         shot.mix_node_name = mix_rgb_visibility_node.name
