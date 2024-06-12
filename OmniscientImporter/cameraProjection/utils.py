@@ -15,17 +15,23 @@ def create_link(node_tree, from_node, from_socket, to_node, to_socket):
     except (IndexError, AttributeError) as e:
         print(f"Failed to create link: {from_node} [{from_socket}] -> {to_node} [{to_socket}]. Error: {e}")
 
-def add_driver(node, input_name_or_index, target, target_id_type, data_path):
+def add_driver(node, input_name_or_index, target, target_id_type, data_path, target_is_output=False):
     try:
-        if isinstance(input_name_or_index, int):
-            input_name = node.inputs[input_name_or_index].name
+        if target_is_output:
+            if isinstance(input_name_or_index, int):
+                socket = node.outputs[input_name_or_index]
+            else:
+                socket = node.outputs[input_name_or_index]
         else:
-            input_name = input_name_or_index
+            if isinstance(input_name_or_index, int):
+                socket = node.inputs[input_name_or_index]
+            else:
+                socket = node.inputs[input_name_or_index]
         
-        if input_name not in node.inputs:
-            raise KeyError(f"Input '{input_name}' not found in node '{node.name}'")
+        if socket.name not in (node.outputs if target_is_output else node.inputs):
+            raise KeyError(f"{'Output' if target_is_output else 'Input'} '{socket.name}' not found in node '{node.name}'")
         
-        driver_fcurve = node.inputs[input_name].driver_add("default_value")
+        driver_fcurve = socket.driver_add("default_value")
         driver = driver_fcurve.driver
         driver.type = 'SCRIPTED'
         var = driver.variables.new()
@@ -35,7 +41,7 @@ def add_driver(node, input_name_or_index, target, target_id_type, data_path):
         var.targets[0].data_path = data_path
         driver.expression = var.name
     except AttributeError as e:
-        print(f"Failed to add driver to {input_name} on node {node.name}: {e}")
+        print(f"Failed to add driver to {socket.name} on node {node.name}: {e}")
     except KeyError as e:
         print(e)
 

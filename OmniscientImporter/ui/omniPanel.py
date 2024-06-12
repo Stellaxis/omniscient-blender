@@ -45,6 +45,7 @@ class OmniCollection(PropertyGroup):
     shots: bpy.props.CollectionProperty(type=OmniShot)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     expanded: bpy.props.BoolProperty(name="Expanded", default=False)
+    emission_value: bpy.props.FloatProperty(name="Emission Value", default=1.0, min=0.0, max=1000.0)
 
 # -------------------------------------------------------------------
 # Handlers
@@ -172,6 +173,9 @@ class OMNI_PT_ShotsPanel(Panel):
         if collection_index < len(scene.Omni_Collections):
             collection = scene.Omni_Collections[collection_index]
             layout.template_list("OMNI_UL_ShotList", "", collection, "shots", scene, "Selected_Shot_Index")
+
+            # Emission control for the selected collection
+            layout.prop(collection, "emission_value", text="Emission")
         else:
             layout.label(text="No shots imported")
 

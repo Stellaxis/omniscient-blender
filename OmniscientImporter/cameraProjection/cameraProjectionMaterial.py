@@ -59,7 +59,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node = nodes.new("ShaderNodeMixRGB")
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
-    mix_rgb_visibility_node.name = "MixRGBVisibilityNode"  # Assign a unique name
+    mix_rgb_visibility_node.name = "MixRGBVisibilityNode" 
 
     collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
 
@@ -69,7 +69,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     multiply_visibility_node = nodes.new("ShaderNodeMath")
     multiply_visibility_node.location = (-400.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     multiply_visibility_node.operation = 'MULTIPLY'
-    multiply_visibility_node.name = "MultiplyVisibilityNode"  # Assign a unique name
+    multiply_visibility_node.name = "MultiplyVisibilityNode" 
     create_link(material.node_tree, new_image_texture_node, 1, multiply_visibility_node, 0)
 
     def add_driver_for_multiply(node, collection_index, shot_index, data_path):
@@ -108,30 +108,29 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
 
     if not mix_rgb_emission_node:
-        # Create a new ColorRamp node
+
         color_ramp_emission_node = nodes.new("ShaderNodeValToRGB")
         color_ramp_emission_node.location = (100.0, bsdf_vertical_position - 350)
-        color_ramp_emission_node.name = "ColorRampEmissionNode"  # Assign a unique name
+        color_ramp_emission_node.name = "ColorRampEmissionNode" 
 
-        # Create a new Value node
         value_node = nodes.new("ShaderNodeValue")
         value_node.location = (200.0, bsdf_vertical_position - 650)
         value_node.outputs[0].default_value = 1.0
-        value_node.name = "ValueEmissionNode"  # Assign a unique name
+        value_node.name = "ValueEmissionNode"
 
-        # Create a new multiply node for emission
+        if collection:
+            add_driver(value_node, 0, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].emission_value", True)
+
         multiply_emission_node = nodes.new("ShaderNodeMath")
         multiply_emission_node.location = (400.0, bsdf_vertical_position - 500)
         multiply_emission_node.operation = 'MULTIPLY'
-        multiply_emission_node.name = "MultiplyEmissionNode"  # Assign a unique name
+        multiply_emission_node.name = "MultiplyEmissionNode"
         
-        # Create a new MixRGB node for the new configuration
         mix_rgb_emission_node = nodes.new("ShaderNodeMixRGB")
         mix_rgb_emission_node.location = (600.0, bsdf_vertical_position - 550.0)
         mix_rgb_emission_node.hide = True
-        mix_rgb_emission_node.name = "MixRGBEmissionNode"  # Assign a unique name
+        mix_rgb_emission_node.name = "MixRGBEmissionNode"
 
-        # Link nodes together
         create_link(material.node_tree, color_ramp_emission_node, 0, multiply_emission_node, 0)
         create_link(material.node_tree, value_node, 0, multiply_emission_node, 1)
         create_link(material.node_tree, multiply_emission_node, 0, mix_rgb_emission_node, 0)
