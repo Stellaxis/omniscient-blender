@@ -164,7 +164,8 @@ class OMNI_PT_ShotsPanel(Panel):
         scene = context.scene
 
         # Collection dropdown menu
-        layout.prop(scene, 'Selected_Collection_Name', text="")
+        if len(scene.Omni_Collections) > 1:
+            layout.prop(scene, 'Selected_Collection_Name', text="")
 
         # Get the selected collection
         collection_index = scene.Selected_Collection_Index
