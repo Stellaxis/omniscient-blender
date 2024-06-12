@@ -26,7 +26,7 @@ class OmniShot(PropertyGroup):
     resolution_y: bpy.props.IntProperty(name="Resolution Y", default=1080)
     shutter_speed_keyframes: bpy.props.CollectionProperty(type=ShutterSpeedKeyframe)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-    camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
+    camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=0.0)
     use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
 
     def assign_id(self):
@@ -46,7 +46,7 @@ class OmniCollection(PropertyGroup):
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     expanded: bpy.props.BoolProperty(name="Expanded", default=False)
     emission_value: bpy.props.FloatProperty(name="Emission Value", default=1.0, min=0.0, max=1000.0)
-    color_scan: bpy.props.FloatVectorProperty(name="Color scan", subtype='COLOR', min=0.0, max=1.0, default=(1.0, 1.0, 1.0))
+    color_scan: bpy.props.FloatVectorProperty(name="Color scan", subtype='COLOR', min=0.0, max=1.0, default=(0.18, 0.18, 0.18))
 
 # -------------------------------------------------------------------
 # Handlers

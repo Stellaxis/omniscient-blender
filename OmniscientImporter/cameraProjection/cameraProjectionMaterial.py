@@ -64,6 +64,11 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node.blend_type = 'MIX'
     mix_rgb_visibility_node.name = "MixRGBVisibilityNode" 
 
+    # Add drivers for mix rgb colors
+    if collection:
+        add_driver(mix_rgb_visibility_node, 1, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].color_scan", False, True)
+        add_driver(mix_rgb_visibility_node, 2, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].color_scan", False, True)
+
     if shot:
         shot.mix_node_name = mix_rgb_visibility_node.name
 
