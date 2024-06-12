@@ -205,6 +205,17 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         else:
             print("Mix RGB Emission Node not found")
 
+        # Connect latest mix RGB visibility node to the color ramp emission node
+        color_ramp_emission_node = find_node(nodes, 'VALTORGB', 'ColorRampEmissionNode')
+        if color_ramp_emission_node:
+            try:
+                links.new(latest_mix_rgb_visibility_node.outputs[0], color_ramp_emission_node.inputs[0])
+                print(f"Linked {latest_mix_rgb_visibility_node.name} to {color_ramp_emission_node.name}")
+            except IndexError as e:
+                print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {color_ramp_emission_node.name} [0]. Error: {e}")
+        else:
+            print("Color Ramp Emission Node not found")
+
     # Ensure BSDF node is connected to the output node
     if principled_bsdf_node and principled_bsdf_node.outputs and output_node and output_node.inputs:
         connected = any(link.from_node == principled_bsdf_node and link.to_node == output_node for link in links)
