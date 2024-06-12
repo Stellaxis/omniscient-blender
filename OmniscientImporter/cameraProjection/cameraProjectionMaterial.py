@@ -186,15 +186,22 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         except IndexError as e:
             print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
 
+        # Create a new link from the latest mix node to the Emission input of the BSDF node
+        try:
+            emission_input_index = 19
+            links.new(latest_mix_rgb_visibility_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
+        except IndexError as e:
+            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
+        
         # Create a new link from the mix_rgb_emission_node to the Emission input of the BSDF node
         mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
         if mix_rgb_emission_node:
             try:
-                emission_input_index = 20  # Typically the emission input index
-                links.new(mix_rgb_emission_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
-                print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [Emission Input {emission_input_index}]")
+                emissionStrength_input_index = 20
+                links.new(mix_rgb_emission_node.outputs[0], principled_bsdf_node.inputs[emissionStrength_input_index])
+                print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [Emission Input {emissionStrength_input_index}]")
             except IndexError as e:
-                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
+                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emissionStrength_input_index}]. Error: {e}")
         else:
             print("Mix RGB Emission Node not found")
 
