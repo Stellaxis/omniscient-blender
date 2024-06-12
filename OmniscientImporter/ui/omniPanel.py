@@ -4,7 +4,7 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import load_custom_icons, preview_collections
-from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot
+from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot, find_collection_and_shot_index_by_camera
 
 # -------------------------------------------------------------------
 # Property Groups
@@ -303,6 +303,7 @@ class OMNI_OT_SwitchShot(Operator):
 
                 if scene.Selected_Collection_Name != shot.collection.name:
                     scene.Selected_Collection_Name = shot.collection.name
+                
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
@@ -385,12 +386,19 @@ def selected_collection_name_update(self, context):
     # Find the index of the collection with the selected name
     for index, collection in enumerate(scene.Omni_Collections):
         if collection.collection.name == collection_name:
-
             scene.Selected_Collection_Index = index
 
             if collection.shots:
-                scene.Selected_Shot_Index = 0
-                bpy.ops.object.switch_shot(index=0, collection_index=index)
+                # Check if the active camera is already in the current collection
+                current_camera = scene.camera
+                _, _, current_collection_index, current_shot_index = find_collection_and_shot_index_by_camera(scene.camera)
+
+                if current_collection_index != index:
+                    # If the active shot is not in the current collection, change the shot index
+                    scene.Selected_Shot_Index = 0
+                    bpy.ops.object.switch_shot(index=0, collection_index=index)
+                else:
+                    scene.Selected_Shot_Index = current_shot_index
             else:
                 scene.Selected_Shot_Index = -1
                 
