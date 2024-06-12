@@ -420,8 +420,8 @@ def register():
         default=0
     )
     bpy.types.Scene.Selected_Collection_Name = bpy.props.EnumProperty(
-        name="Selected Collection",
-        description="Choose a collection",
+        name="",
+        description="Choose a scene",
         items=get_collection_names,
         update=selected_collection_name_update
     )
