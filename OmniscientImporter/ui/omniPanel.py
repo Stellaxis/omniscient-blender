@@ -15,6 +15,7 @@ class ShutterSpeedKeyframe(PropertyGroup):
     value: bpy.props.FloatProperty(name="Value")
 
 class OmniShot(PropertyGroup):
+    id: bpy.props.IntProperty()
     camera: bpy.props.PointerProperty(type=bpy.types.Object)
     mesh: bpy.props.PointerProperty(type=bpy.types.Object)
     video: bpy.props.PointerProperty(type=bpy.types.Image)
@@ -27,6 +28,18 @@ class OmniShot(PropertyGroup):
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
     camera_projection_multiply: bpy.props.FloatProperty(name="Camera Projection Enabled", default=1.0)
     use_motion_blur: bpy.props.BoolProperty(name="Use Motion Blur", default=False)
+
+    def assign_id(self):
+        self.id = OmniShot.get_next_id()
+
+    @staticmethod
+    def get_next_id():
+        max_id = 0
+        for collection in bpy.context.scene.Omni_Collections:
+            for shot in collection.shots:
+                if shot.id > max_id:
+                    max_id = shot.id
+        return max_id + 1
 
 class OmniCollection(PropertyGroup):
     shots: bpy.props.CollectionProperty(type=OmniShot)
@@ -211,7 +224,8 @@ class OMNI_UL_ShotList(UIList):
             icon_on = pcoll["icon_cameraProjector_on"].icon_id
             icon_off = pcoll["icon_cameraProjector_off"].icon_id
             icon_value = icon_on if shot.camera_projection_multiply == 1.0 else icon_off
-            row.operator("object.toggle_camera_projection", text="", icon_value=icon_value).index = index
+            operator = row.operator("object.toggle_camera_projection", text="", icon_value=icon_value)
+            operator.shot_id = shot.id
 
             row.operator("object.delete_shot", text="", icon='X').index = index
         elif self.layout_type in {'GRID'}:
@@ -331,26 +345,21 @@ class OMNI_OT_ToggleCameraProjection(Operator):
     bl_idname = "object.toggle_camera_projection"
     bl_label = "Toggle Camera Projection"
 
-    index: bpy.props.IntProperty()
-    collection_index: bpy.props.IntProperty()
+    shot_id: bpy.props.IntProperty()
 
     def execute(self, context):
         scene = context.scene
-        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
-        shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
+        for collection in scene.Omni_Collections:
+            for shot in collection.shots:
+                if shot.id == self.shot_id:
+                    shot.camera_projection_multiply = 1.0 if shot.camera_projection_multiply == 0.0 else 0.0
 
-        if collection_index < len(scene.Omni_Collections):
-            collection = scene.Omni_Collections[collection_index]
-            if 0 <= shot_index < len(collection.shots):
-                shot = collection.shots[shot_index]
-                shot.camera_projection_multiply = 1.0 if shot.camera_projection_multiply == 0.0 else 0.0
-                
-                # Debug print to trace property update
-                print(f"Toggled camera_projection_multiply for shot {shot.camera.name} to {shot.camera_projection_multiply}")
+                    # Force update dependencies
+                    update_related_drivers(shot)
+                    break
 
-                # Force update dependencies
-                update_related_drivers(shot)
         return {'FINISHED'}
+
 
 # -------------------------------------------------------------------
 # Registration

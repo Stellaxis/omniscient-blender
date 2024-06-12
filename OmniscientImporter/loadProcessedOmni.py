@@ -214,6 +214,8 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     shot_index = len(omni_collection.shots) - 1
     shot.name = f"Shot {shot_index + 1:02d}"
 
+    shot.assign_id()
+
     # Auto-select the imported shot
     bpy.context.scene.Selected_Shot_Index = shot_index
 

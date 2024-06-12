@@ -3,7 +3,7 @@ from bpy.types import PropertyGroup
 from bpy.props import StringProperty
 from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes, find_node
 from .projection_shader_group import create_projection_shader_group
-from ..ui.utils import get_selected_collection_and_shot
+from ..ui.utils import find_collection_and_shot_index_by_camera
 
 def create_projection_shader(material_name, new_image_name, new_camera):
     material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
@@ -60,7 +60,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
 
-    collection, shot = get_selected_collection_and_shot(bpy.context.scene)
+    collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
+
     if shot:
         shot.mix_node_name = mix_rgb_visibility_node.name
 
@@ -81,8 +82,6 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         bpy.context.scene.update_tag()
         bpy.context.view_layer.update()
 
-    collection_index = bpy.context.scene.Selected_Collection_Index
-    shot_index = bpy.context.scene.Selected_Shot_Index
     add_driver_for_multiply(multiply_visibility_node, collection_index, shot_index, "camera_projection_multiply")
 
     if previous_mix_node:
