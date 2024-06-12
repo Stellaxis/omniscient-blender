@@ -4,7 +4,7 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import load_custom_icons, preview_collections
-from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot, selected_collection_index_update
+from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot
 
 # -------------------------------------------------------------------
 # Property Groups
@@ -371,8 +371,7 @@ def register():
     )
     bpy.types.Scene.Selected_Collection_Index = bpy.props.IntProperty(
         name="Selected Collection Index",
-        default=0,
-        update=selected_collection_index_update
+        default=0
     )
     bpy.types.Scene.auto_switch_shot = bpy.props.BoolProperty(
         name="Auto Switch Shot",
