@@ -218,6 +218,8 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
 
     # Auto-select the imported shot
     bpy.context.scene.Selected_Shot_Index = shot_index
+    if scene.Selected_Collection_Name != omniscient_collection.name:
+        scene.Selected_Collection_Name = omniscient_collection.name
 
     hide_omniscient_collections(bpy.context.scene)
     omniscient_collection.hide_viewport = False
