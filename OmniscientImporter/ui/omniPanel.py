@@ -41,8 +41,7 @@ class OmniCollection(PropertyGroup):
 def update_active_camera(scene, depsgraph):
     active_camera = scene.camera
     if active_camera:
-        scene.Active_Camera_Name = active_camera.name
-        
+
         found_shot = None
         found_collection_index = -1
         found_shot_index = -1
@@ -68,8 +67,6 @@ def update_active_camera(scene, depsgraph):
                 scene.Selected_Collection_Index = found_collection_index
                 scene.Selected_Shot_Index = found_shot_index
                 bpy.ops.object.switch_shot(index=found_shot_index, collection_index=found_collection_index)
-    else:
-        scene.Active_Camera_Name = "None"
 
 @persistent
 def update_render_settings(self, context):
@@ -367,7 +364,6 @@ def register():
         type=bpy.types.Object
     )
     
-    bpy.types.Scene.Active_Camera_Name = bpy.props.StringProperty(name="Active Camera Name", default="None")
     bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(
         name="Selected Shot Index", 
         default=0,
@@ -397,7 +393,6 @@ def unregister():
     del bpy.types.WindowManager.popup_text
     del bpy.types.Scene.Camera_Omni
     del bpy.types.Scene.Scan_Omni
-    del bpy.types.Scene.Active_Camera_Name
     del bpy.types.Scene.Selected_Shot_Index
     del bpy.types.Scene.Selected_Collection_Index
     del bpy.types.Scene.auto_switch_shot
