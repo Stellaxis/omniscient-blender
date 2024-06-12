@@ -118,7 +118,7 @@ def setup_compositing_nodes(image):
     image_node.frame_duration = image.frame_duration
 
     # Add drivers to the scale node
-    def add_driver(socket, scene_data_path, image_data_path, var_name_scene, var_name_image, expression):
+    def add_driver(socket, scene_data_path, image_data_path, var_name_scene, var_name_image, var_name_percentage, expression):
         driver = socket.driver_add("default_value").driver
         driver.type = 'SCRIPTED'
 
@@ -137,12 +137,13 @@ def setup_compositing_nodes(image):
 
         find_or_create_var(driver, var_name_scene, 'SCENE', bpy.context.scene, scene_data_path)
         find_or_create_var(driver, var_name_image, 'IMAGE', image, image_data_path)
+        find_or_create_var(driver, var_name_percentage, 'SCENE', bpy.context.scene, "render.resolution_percentage")
         
         driver.expression = expression
 
     # Create expressions for the drivers
-    add_driver(scale_node.inputs[1], "render.resolution_x", "size[0]", "project_res_x", "image_x", "project_res_x / image_x")
-    add_driver(scale_node.inputs[2], "render.resolution_y", "size[1]", "project_res_y", "image_y", "project_res_y / image_y")
+    add_driver(scale_node.inputs[1], "render.resolution_x", "size[0]", "project_res_x", "image_x", "res_percentage", "(project_res_x / image_x) * (res_percentage / 100.0)")
+    add_driver(scale_node.inputs[2], "render.resolution_y", "size[1]", "project_res_y", "image_y", "res_percentage", "(project_res_y / image_y) * (res_percentage / 100.0)")
 
     # Refresh the compositor
     node_tree.update_tag()
