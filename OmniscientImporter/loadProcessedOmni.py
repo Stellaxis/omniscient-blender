@@ -221,7 +221,8 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     omniscient_collection.hide_viewport = False
 
     # Trigger the shot switch
-    bpy.ops.object.switch_shot(index=shot_index)
+    if scene.camera != shot.camera:
+        bpy.ops.object.switch_shot(index=shot_index)
 
     # Bake camera keyframes if the preference is enabled
     if prefs.bake_camera_keyframes and imported_cam:
