@@ -47,6 +47,7 @@ class OmniCollection(PropertyGroup):
     expanded: bpy.props.BoolProperty(name="Expanded", default=False)
     emission_value: bpy.props.FloatProperty(name="Emission Value", default=0.0, min=0.0, max=1000.0)
     color_scan: bpy.props.FloatVectorProperty(name="Color scan", subtype='COLOR', min=0.0, max=1.0, default=(0.18, 0.18, 0.18))
+    mix_rgb_emission_input: bpy.props.FloatProperty(name="Mix RGB Emission Input", default=0.0, min=0.0, max=1.0)
 
 # -------------------------------------------------------------------
 # Handlers
@@ -173,8 +174,12 @@ class OMNI_PT_ShotsPanel(Panel):
             collection = scene.Omni_Collections[collection_index]
             layout.template_list("OMNI_UL_ShotList", "", collection, "shots", scene, "Selected_Shot_Index")
 
-            layout.prop(collection, "emission_value", text="Emission")
-            layout.prop(collection, "color_scan", text="Color Scan")
+            box = layout.box()
+            box.label(text="Scan")
+            box.prop(collection, "emission_value", text="Emission")
+            if collection.emission_value > 0:
+                box.prop(collection, "mix_rgb_emission_input", text="Luminance Mask")
+            box.prop(collection, "color_scan", text="Default Color")
         else:
             layout.label(text="No shots imported")
 
