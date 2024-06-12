@@ -382,19 +382,21 @@ def selected_collection_name_update(self, context):
     scene = context.scene
     collection_name = scene.Selected_Collection_Name
 
-    # # Find the index of the collection with the selected name
-    # for index, collection in enumerate(scene.Omni_Collections):
-    #     if collection.collection.name == collection_name:
+    # Find the index of the collection with the selected name
+    for index, collection in enumerate(scene.Omni_Collections):
+        if collection.collection.name == collection_name:
 
-    #         if collection.shots:
-    #             scene.Selected_Shot_Index = 0
-    #         else:
-    #             scene.Selected_Shot_Index = -1
+            scene.Selected_Collection_Index = index
+
+            if collection.shots:
+                scene.Selected_Shot_Index = 0
+                bpy.ops.object.switch_shot(index=0, collection_index=index)
+            else:
+                scene.Selected_Shot_Index = -1
                 
-    #         scene.Selected_Collection_Index = index
-    #         break
-    # else:
-    #     scene.Selected_Collection_Index = -1
+            break
+    else:
+        scene.Selected_Collection_Index = -1
 
 def register():
     bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
