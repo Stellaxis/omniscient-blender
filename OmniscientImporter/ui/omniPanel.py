@@ -150,6 +150,9 @@ class OMNI_PT_ShotsPanel(Panel):
         layout = self.layout
         scene = context.scene
 
+        # Collection dropdown menu
+        layout.prop(scene, 'Selected_Collection_Name', text="")
+
         # Get the selected collection
         collection_index = scene.Selected_Collection_Index
         if collection_index < len(scene.Omni_Collections):
@@ -282,6 +285,9 @@ class OMNI_OT_SwitchShot(Operator):
                 hide_omniscient_collections(scene)
                 shot.collection.hide_viewport = False
                 shot.collection.hide_render = False
+
+                if scene.Selected_Collection_Name != shot.collection.name:
+                    scene.Selected_Collection_Name = shot.collection.name
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
@@ -350,6 +356,36 @@ class OMNI_OT_ToggleCameraProjection(Operator):
 # Registration
 # -------------------------------------------------------------------
 
+# Function to get collection names
+def get_collection_names(self, context):
+    items = []
+    if context is None:
+        return items
+    try:
+        collections = context.scene.Omni_Collections
+        items = [(col.collection.name, col.collection.name, "") for col in collections if col.collection]
+    except AttributeError:
+        pass  # Handle the case where the properties are not yet fully available
+    return items
+
+def selected_collection_name_update(self, context):
+    scene = context.scene
+    collection_name = scene.Selected_Collection_Name
+
+    # # Find the index of the collection with the selected name
+    # for index, collection in enumerate(scene.Omni_Collections):
+    #     if collection.collection.name == collection_name:
+
+    #         if collection.shots:
+    #             scene.Selected_Shot_Index = 0
+    #         else:
+    #             scene.Selected_Shot_Index = -1
+                
+    #         scene.Selected_Collection_Index = index
+    #         break
+    # else:
+    #     scene.Selected_Collection_Index = -1
+
 def register():
     bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
         name="Popup Text",
@@ -373,6 +409,12 @@ def register():
         name="Selected Collection Index",
         default=0
     )
+    bpy.types.Scene.Selected_Collection_Name = bpy.props.EnumProperty(
+        name="Selected Collection",
+        description="Choose a collection",
+        items=get_collection_names,
+        update=selected_collection_name_update
+    )
     bpy.types.Scene.auto_switch_shot = bpy.props.BoolProperty(
         name="Auto Switch Shot",
         description="Automatically switch shot when selecting an OmniShot",
@@ -394,6 +436,7 @@ def unregister():
     del bpy.types.Scene.Scan_Omni
     del bpy.types.Scene.Selected_Shot_Index
     del bpy.types.Scene.Selected_Collection_Index
+    del bpy.types.Scene.Selected_Collection_Name
     del bpy.types.Scene.auto_switch_shot
     del bpy.types.Scene.Omni_Collections
 
