@@ -156,7 +156,7 @@ class OMNI_PT_ShotsPanel(Panel):
             collection = scene.Omni_Collections[collection_index]
             layout.template_list("OMNI_UL_ShotList", "", collection, "shots", scene, "Selected_Shot_Index")
         else:
-            layout.label(text="No collection selected")
+            layout.label(text="No shots imported")
 
 class OMNI_PT_VersionWarningPanel(Panel):
     bl_label = "Version Warning"
