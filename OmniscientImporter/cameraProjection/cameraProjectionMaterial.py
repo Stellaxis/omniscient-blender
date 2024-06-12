@@ -133,8 +133,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
         create_link(material.node_tree, color_ramp_emission_node, 0, multiply_emission_node, 0)
         create_link(material.node_tree, value_node, 0, multiply_emission_node, 1)
-        create_link(material.node_tree, multiply_emission_node, 0, mix_rgb_emission_node, 0)
-        create_link(material.node_tree, value_node, 0, mix_rgb_emission_node, 1)
+        create_link(material.node_tree, multiply_emission_node, 0, mix_rgb_emission_node, 1)
+        create_link(material.node_tree, value_node, 0, mix_rgb_emission_node, 2)
     else:
         # Update positions if nodes already exist
         color_ramp_emission_node = find_node(nodes, 'VALTORGB', 'ColorRampEmissionNode')
