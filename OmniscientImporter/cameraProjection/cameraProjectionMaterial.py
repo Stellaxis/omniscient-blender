@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import PropertyGroup
 from bpy.props import StringProperty
-from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes, find_node
+from .utils import get_or_create_node, create_link, add_driver, hide_specific_nodes, find_node, is_blender_4
 from .projection_shader_group import create_projection_shader_group
 from ..ui.utils import find_collection_and_shot_index_by_camera
 
@@ -192,13 +192,16 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         except IndexError as e:
             print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
 
-        # Create a new link from the latest mix node to the Emission input of the BSDF node
         try:
-            emission_input_index = 19
-            links.new(latest_mix_rgb_visibility_node.outputs[0], principled_bsdf_node.inputs[emission_input_index])
-        except IndexError as e:
-            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_index}]. Error: {e}")
-        
+            emission_input_name = "Emission Color" if is_blender_4() else "Emission"
+            emission_input = principled_bsdf_node.inputs.get(emission_input_name)
+            if emission_input is not None:
+                links.new(latest_mix_rgb_visibility_node.outputs[0], emission_input)
+            else:
+                print(f"{emission_input_name} input not found in {principled_bsdf_node.name}")
+        except Exception as e:
+            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_name}]. Error: {e}")
+                
         # Create a new link from the mix_rgb_emission_node to the Emission input of the BSDF node
         mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
         if mix_rgb_emission_node:

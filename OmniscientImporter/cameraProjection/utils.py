@@ -67,3 +67,7 @@ def find_node(nodes, node_type, node_name=None):
     if node_name:
         return next((node for node in nodes if node.type == node_type and node.name == node_name), None)
     return next((node for node in nodes if node.type == node_type), None)
+
+def is_blender_4():
+    from bpy.app import version
+    return version >= (4, 0, 0)
