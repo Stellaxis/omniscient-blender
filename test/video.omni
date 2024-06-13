@@ -2,7 +2,7 @@
     "version": "2.1.0",
     "blender": {
         "minimum_addon_version": "1.4.0",
-        "ideal_addon_version": "2.1.0"
+        "ideal_addon_version": "2.2.0"
     },
     "cinema4d": {
         "minimum_plugin_version": "1.0.0",

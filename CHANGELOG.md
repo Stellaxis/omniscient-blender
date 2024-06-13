@@ -1,3 +1,14 @@
+# 2.2.0 - (2024.06.13)
+
+### Features
+- Shots organized per scene
+- Projection as emissive
+- Luminance-based emission
+- Base mesh color control
+
+### Fixes
+- Proportional scaling using resolution percentage
+
 # 2.1.0 - (2024.06.09)
 
 ### Features
