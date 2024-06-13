@@ -202,15 +202,24 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         except Exception as e:
             print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_name}]. Error: {e}")
                 
-        # Create a new link from the mix_rgb_emission_node to the Emission input of the BSDF node
+        # Create a new link from the mix_rgb_emission_node to the Emission Strength input of the BSDF node
         mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
         if mix_rgb_emission_node:
             try:
-                emissionStrength_input_index = 20
-                links.new(mix_rgb_emission_node.outputs[0], principled_bsdf_node.inputs[emissionStrength_input_index])
-                print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [Emission Input {emissionStrength_input_index}]")
-            except IndexError as e:
-                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emissionStrength_input_index}]. Error: {e}")
+                if is_blender_4():
+                    emission_strength_input_name = "Emission Strength"
+                    emission_strength_input = principled_bsdf_node.inputs.get(emission_strength_input_name)
+                else:
+                    emission_strength_input_index = 20
+                    emission_strength_input = principled_bsdf_node.inputs[emission_strength_input_index]
+
+                if emission_strength_input is not None:
+                    links.new(mix_rgb_emission_node.outputs[0], emission_strength_input)
+                    print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]")
+                else:
+                    print(f"Emission Strength input not found in {principled_bsdf_node.name}")
+            except Exception as e:
+                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]. Error: {e}")
         else:
             print("Mix RGB Emission Node not found")
 
