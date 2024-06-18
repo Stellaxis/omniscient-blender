@@ -412,7 +412,7 @@ def selected_collection_name_update(self, context):
 
             if collection.shots:
                 # Check if the active camera is already in the current collection
-                current_camera = scene.camera
+                # current_camera = scene.camera
                 _, _, current_collection_index, current_shot_index = find_collection_and_shot_index_by_camera(scene.camera)
 
                 if current_collection_index != index:

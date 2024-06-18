@@ -257,8 +257,8 @@ def delete_projection_nodes(camera_name):
             links = material.node_tree.links
             node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_visibility_node, node_entry.multiply_visibility_node]
 
-            principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
-            output_node = find_node(nodes, 'OUTPUT_MATERIAL')
+            # principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
+            # output_node = find_node(nodes, 'OUTPUT_MATERIAL')
 
             # Find the previous and next ShaderNodeMixRGB nodes
             prev_mix_rgb_visibility_node = None
