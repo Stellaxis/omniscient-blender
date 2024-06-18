@@ -27,7 +27,8 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
         elif self.file_type == "GEO":
             self.GeoPath = self.filepath
 
-        # Have to open again because of this issue : https://blender.stackexchange.com/questions/262627/prevent-properties-dialog-from-closing-during-file-path-selection
+        # Have to open again because of this issue :
+        # https://blender.stackexchange.com/questions/262627/prevent-properties-dialog-from-closing-during-file-path-selection
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
                                          isCameraFileMissing=not os.path.exists(self.CameraPath),
                                          isVideoFileMissing=not os.path.exists(self.VideoPath),

@@ -69,5 +69,7 @@ class OMNI_Preferences(AddonPreferences):
         # Useful Links
         row = layout.row()
         row.label(text="Useful links :")
-        row.operator("wm.url_open", text="Documentation").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
-        row.operator("wm.url_open", text="Contact Us").url = "https://learn.omniscient-app.com/contact-us"
+        row.operator("wm.url_open",
+                     text="Documentation").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+        row.operator("wm.url_open",
+                     text="Contact Us").url = "https://learn.omniscient-app.com/contact-us"

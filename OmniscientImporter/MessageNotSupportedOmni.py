@@ -17,4 +17,6 @@ class MessageNotSupportedOmni(bpy.types.Operator):
         layout = self.layout
         layout.label(text=str(f"Update needed: version {self.minimum_addon_version} or higher"))
         layout.label(text=str(f"Current version: {self.current_version_str}"))
-        layout.operator("wm.url_open", text="Get the latest version", icon='URL').url = "https://github.com/Stellaxis/omniscient-blender/releases/latest"
+        layout.operator("wm.url_open",
+                        text="Get the latest version",
+                        icon='URL').url = "https://github.com/Stellaxis/omniscient-blender/releases/latest"

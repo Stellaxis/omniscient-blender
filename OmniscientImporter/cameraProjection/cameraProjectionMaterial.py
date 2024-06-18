@@ -67,8 +67,19 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     # Add drivers for mix rgb colors
     if collection:
-        add_driver(mix_rgb_visibility_node, 1, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].color_scan", False, True)
-        add_driver(mix_rgb_visibility_node, 2, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].color_scan", False, True)
+        add_driver(mix_rgb_visibility_node,
+                   1, bpy.context.scene,
+                   'SCENE',
+                   f"Omni_Collections[{collection_index}].color_scan",
+                   False,
+                   True)
+        add_driver(mix_rgb_visibility_node,
+                   2,
+                   bpy.context.scene,
+                   'SCENE',
+                   f"Omni_Collections[{collection_index}].color_scan",
+                   False,
+                   True)
 
     if shot:
         shot.mix_node_name = mix_rgb_visibility_node.name
@@ -136,8 +147,17 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         mix_rgb_emission_node.name = "MixRGBEmissionNode"
 
         if collection:
-            add_driver(value_node, 0, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].emission_value", True)
-            add_driver(mix_rgb_emission_node, 0, bpy.context.scene, 'SCENE', f"Omni_Collections[{collection_index}].mix_rgb_emission_input")
+            add_driver(value_node,
+                       0,
+                       bpy.context.scene,
+                       'SCENE',
+                       f"Omni_Collections[{collection_index}].emission_value",
+                       True)
+            add_driver(mix_rgb_emission_node,
+                       0,
+                       bpy.context.scene,
+                       'SCENE',
+                       f"Omni_Collections[{collection_index}].mix_rgb_emission_input")
 
         create_link(material.node_tree, color_ramp_emission_node, 0, multiply_emission_node, 0)
         create_link(material.node_tree, value_node, 0, multiply_emission_node, 1)
@@ -168,7 +188,9 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     node_entry.mix_rgb_visibility_node = mix_rgb_visibility_node.name
     node_entry.multiply_visibility_node = multiply_visibility_node.name
 
-    print(f"Added camera projection node: {node_entry.name}, Material: {node_entry.material_name}, Mix Node: {node_entry.mix_rgb_visibility_node}")
+    print(f"Added camera projection node: {node_entry.name}, \
+          Material: {node_entry.material_name}, \
+          Mix Node: {node_entry.mix_rgb_visibility_node}")
 
     return material
 
@@ -190,9 +212,11 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
         # Create a new link from the latest mix node to the BSDF node
         try:
             links.new(latest_mix_rgb_visibility_node.outputs[0], principled_bsdf_node.inputs[0])
-            print(f"Linked {latest_mix_rgb_visibility_node.name} to {principled_bsdf_node.name}")
+            print(f"Linked {latest_mix_rgb_visibility_node.name} \
+                  to {principled_bsdf_node.name}")
         except IndexError as e:
-            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
+            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} \
+                  [0] -> {principled_bsdf_node.name} [0]. Error: {e}")
 
         try:
             emission_input_name = "Emission Color" if is_blender_4() else "Emission"
@@ -202,7 +226,8 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
             else:
                 print(f"{emission_input_name} input not found in {principled_bsdf_node.name}")
         except Exception as e:
-            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_name}]. Error: {e}")
+            print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} \
+                  [0] -> {principled_bsdf_node.name} [{emission_input_name}]. Error: {e}")
 
         # Create a new link from the mix_rgb_emission_node to the Emission Strength input of the BSDF node
         mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
@@ -217,11 +242,15 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
 
                 if emission_strength_input is not None:
                     links.new(mix_rgb_emission_node.outputs[0], emission_strength_input)
-                    print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]")
+                    print(f"Linked {mix_rgb_emission_node.name} to {principled_bsdf_node.name} \
+                          [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]")
                 else:
                     print(f"Emission Strength input not found in {principled_bsdf_node.name}")
             except Exception as e:
-                print(f"Failed to create link: {mix_rgb_emission_node.name} [0] -> {principled_bsdf_node.name} [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]. Error: {e}")
+                print(f"Failed to create link: {mix_rgb_emission_node.name} \
+                      [0] -> {principled_bsdf_node.name} \
+                        [{emission_strength_input_name if is_blender_4() else emission_strength_input_index}]. \
+                              Error: {e}")
         else:
             print("Mix RGB Emission Node not found")
 
@@ -232,7 +261,8 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
                 links.new(latest_mix_rgb_visibility_node.outputs[0], color_ramp_emission_node.inputs[0])
                 print(f"Linked {latest_mix_rgb_visibility_node.name} to {color_ramp_emission_node.name}")
             except IndexError as e:
-                print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {color_ramp_emission_node.name} [0]. Error: {e}")
+                print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} \
+                      [0] -> {color_ramp_emission_node.name} [0]. Error: {e}")
         else:
             print("Color Ramp Emission Node not found")
 
@@ -255,7 +285,11 @@ def delete_projection_nodes(camera_name):
         if material:
             nodes = material.node_tree.nodes
             links = material.node_tree.links
-            node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_visibility_node, node_entry.multiply_visibility_node]
+            node_names = [node_entry.tex_coord_node,
+                          node_entry.image_texture_node,
+                          node_entry.camera_projector_group_node,
+                          node_entry.mix_rgb_visibility_node,
+                          node_entry.multiply_visibility_node]
 
             # principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
             # output_node = find_node(nodes, 'OUTPUT_MATERIAL')
@@ -281,7 +315,11 @@ def delete_projection_nodes(camera_name):
             # Reconnect the previous mix node to the next mix node, if they exist
             if prev_mix_rgb_visibility_node and next_mix_rgb_visibility_node:
                 # Remove the specific link from the deleted mix node to the next mix node
-                links_to_remove = [link for link in links if link.to_node == next_mix_rgb_visibility_node and link.from_node.name == node_entry.mix_rgb_visibility_node]
+                links_to_remove = [
+                    link for link in links 
+                    if (link.to_node == next_mix_rgb_visibility_node and 
+                        link.from_node.name == node_entry.mix_rgb_visibility_node)
+                ]
                 for link in links_to_remove:
                     links.remove(link)
 
@@ -289,7 +327,8 @@ def delete_projection_nodes(camera_name):
                 try:
                     links.new(prev_mix_rgb_visibility_node.outputs[0], next_mix_rgb_visibility_node.inputs[1])
                 except IndexError as e:
-                    print(f"Failed to create link: {prev_mix_rgb_visibility_node.name} [0] -> {next_mix_rgb_visibility_node.name} [1]. Error: {e}")
+                    print(f"Failed to create link: {prev_mix_rgb_visibility_node.name} \
+                          [0] -> {next_mix_rgb_visibility_node.name} [1]. Error: {e}")
 
             # Find the latest ShaderNodeMixRGB node from remaining CameraProjectionNodes
             latest_mix_rgb_visibility_node = None
@@ -360,9 +399,13 @@ def reorder_projection_nodes(camera_name, mesh):
                 'mix_rgb_visibility_node': entry.mix_rgb_visibility_node,
                 'multiply_visibility_node': entry.multiply_visibility_node
             })
-            print(f"Valid entry found: Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_visibility_node}")
+            print(f"Valid entry found: Camera: {entry.name}, \
+                  Material: {entry.material_name}, \
+                    Mix Node: {entry.mix_rgb_visibility_node}")
         else:
-            print(f"Invalid entry found: Camera: {entry.name}, Material: {entry.material_name}, Mix Node: {entry.mix_rgb_visibility_node}")
+            print(f"Invalid entry found: Camera: {entry.name}, \
+                  Material: {entry.material_name}, \
+                    Mix Node: {entry.mix_rgb_visibility_node}")
 
     print(f"Valid entries before clearing: {len(valid_entries)}")
 
@@ -381,7 +424,9 @@ def reorder_projection_nodes(camera_name, mesh):
         new_entry.camera_projector_group_node = entry['camera_projector_group_node']
         new_entry.mix_rgb_visibility_node = entry['mix_rgb_visibility_node']
         new_entry.multiply_visibility_node = entry['multiply_visibility_node']
-        print(f"Re-added valid entry: Camera: {new_entry.name}, Material: {new_entry.material_name}, Mix Node: {new_entry.mix_rgb_visibility_node}")
+        print(f"Re-added valid entry: Camera: {new_entry.name}, \
+              Material: {new_entry.material_name}, \
+                Mix Node: {new_entry.mix_rgb_visibility_node}")
 
     print(f"Entries after clearing and re-adding: {len(scene.camera_projection_nodes)}")
 
@@ -394,7 +439,11 @@ def reorder_projection_nodes(camera_name, mesh):
             first_mix_rgb_visibility_node = nodes.get(first_node_entry['mix_rgb_visibility_node'])
             if first_mix_rgb_visibility_node:
                 # Remove links to input [1] of the first mix RGB node
-                links_to_remove = [link for link in first_material.node_tree.links if link.to_node == first_mix_rgb_visibility_node and link.to_socket == first_mix_rgb_visibility_node.inputs[1]]
+                links_to_remove = [
+                    link for link in first_material.node_tree.links
+                    if link.to_node == first_mix_rgb_visibility_node and 
+                    link.to_socket == first_mix_rgb_visibility_node.inputs[1]
+                ]
                 for link in links_to_remove:
                     first_material.node_tree.links.remove(link)
                 print(f"Disconnected input [1] of the first mix RGB node: {first_mix_rgb_visibility_node.name}")
@@ -411,7 +460,10 @@ def reorder_projection_nodes(camera_name, mesh):
         mix_rgb_visibility_node = nodes.get(entry['mix_rgb_visibility_node'])
         if prev_mix_rgb_visibility_node and mix_rgb_visibility_node:
             # Remove the existing link from the previous mix node to the current mix node
-            links_to_remove = [link for link in material.node_tree.links if link.to_node == mix_rgb_visibility_node and link.from_node == prev_mix_rgb_visibility_node]
+            links_to_remove = [
+                link for link in material.node_tree.links 
+                if link.to_node == mix_rgb_visibility_node and link.from_node == prev_mix_rgb_visibility_node
+            ]
             for link in links_to_remove:
                 material.node_tree.links.remove(link)
 
@@ -420,7 +472,8 @@ def reorder_projection_nodes(camera_name, mesh):
                 material.node_tree.links.new(prev_mix_rgb_visibility_node.outputs[0], mix_rgb_visibility_node.inputs[1])
                 print(f"Linked {prev_mix_rgb_visibility_node.name} to {mix_rgb_visibility_node.name}")
             except IndexError as e:
-                print(f"Failed to create link: {prev_mix_rgb_visibility_node.name} [0] -> {mix_rgb_visibility_node.name} [1]. Error: {e}")
+                print(f"Failed to create link: {prev_mix_rgb_visibility_node.name} \
+                      [0] -> {mix_rgb_visibility_node.name} [1]. Error: {e}")
 
         prev_mix_rgb_visibility_node = mix_rgb_visibility_node
 

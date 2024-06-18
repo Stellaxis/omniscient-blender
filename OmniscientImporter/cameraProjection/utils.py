@@ -31,7 +31,8 @@ def add_driver(node, input_name_or_index, target, target_id_type, data_path, tar
                 socket = node.inputs[input_name_or_index]
 
         if socket.name not in (node.outputs if target_is_output else node.inputs):
-            raise KeyError(f"{'Output' if target_is_output else 'Input'} '{socket.name}' not found in node '{node.name}'")
+            raise KeyError(f"{'Output' if target_is_output else 'Input'} '{socket.name}' \
+                            not found in node '{node.name}'")
 
         if is_color and hasattr(socket, 'default_value') and len(socket.default_value) == 4:
             channels = ['R', 'G', 'B', 'A']

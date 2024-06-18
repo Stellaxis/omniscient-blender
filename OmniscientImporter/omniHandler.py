@@ -27,7 +27,9 @@ def loadOmni(self, omni_file):
             current_version = bl_info['version']
             current_version_str = ".".join(str(x) for x in current_version)
             if current_version_str < minimum_addon_version:
-                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version=minimum_addon_version, current_version_str=current_version_str)
+                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT',
+                                                   minimum_addon_version=minimum_addon_version,
+                                                   current_version_str=current_version_str)
                 return {'CANCELLED'}
 
         # Check if the current version is lower than the ideal version

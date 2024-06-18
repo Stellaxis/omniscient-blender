@@ -4,7 +4,15 @@ from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..loadCustomIcons import preview_collections
-from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot, find_collection_and_shot_index_by_camera
+from .utils import (
+    adjust_timeline_view, 
+    hide_omniscient_collections, 
+    clear_motion_blur_keyframes, 
+    update_related_drivers, 
+    selected_shot_index_update, 
+    get_selected_collection_and_shot, 
+    find_collection_and_shot_index_by_camera
+)
 
 # -------------------------------------------------------------------
 # Property Groups
@@ -47,10 +55,21 @@ class OmniShot(PropertyGroup):
 class OmniCollection(PropertyGroup):
     shots: bpy.props.CollectionProperty(type=OmniShot)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-    expanded: bpy.props.BoolProperty(name="Expanded", default=False)
-    emission_value: bpy.props.FloatProperty(name="Emission Value", default=0.0, min=0.0, max=1000.0)
-    color_scan: bpy.props.FloatVectorProperty(name="Color scan", subtype='COLOR', min=0.0, max=1.0, default=(0.18, 0.18, 0.18))
-    mix_rgb_emission_input: bpy.props.FloatProperty(name="Mix RGB Emission Input", default=0.0, min=0.0, max=1.0)
+    expanded: bpy.props.BoolProperty(name="Expanded",
+                                     default=False)
+    emission_value: bpy.props.FloatProperty(name="Emission Value",
+                                            default=0.0,
+                                            min=0.0,
+                                            max=1000.0)
+    color_scan: bpy.props.FloatVectorProperty(name="Color scan",
+                                              subtype='COLOR',
+                                              min=0.0,
+                                              max=1.0,
+                                              default=(0.18, 0.18, 0.18))
+    mix_rgb_emission_input: bpy.props.FloatProperty(name="Mix RGB Emission Input",
+                                                    default=0.0,
+                                                    min=0.0,
+                                                    max=1.0)
 
 # -------------------------------------------------------------------
 # Handlers
@@ -224,7 +243,8 @@ class OMNI_PT_VersionWarningPanel(Panel):
                     row.label(text=line)
 
             row = layout.row()
-            row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+            row.operator("wm.url_open",
+                         text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
 
 # -------------------------------------------------------------------
 # UI Lists
@@ -287,7 +307,11 @@ class OMNI_OT_SwitchShot(Operator):
 
     def execute(self, context):
         scene = context.scene
-        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        collection_index = (
+            self.collection_index 
+            if self.collection_index is not None 
+            else scene.Selected_Collection_Index
+        )
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
         collection, shot = get_selected_collection_and_shot(scene, collection_index, shot_index)
@@ -337,7 +361,8 @@ class OMNI_OT_DeleteShot(Operator):
 
     def execute(self, context):
         scene = context.scene
-        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        collection_index = self.collection_index if self.collection_index is not None else \
+            scene.Selected_Collection_Index
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
         if collection_index < len(scene.Omni_Collections):
@@ -413,7 +438,8 @@ def selected_collection_name_update(self, context):
             if collection.shots:
                 # Check if the active camera is already in the current collection
                 # current_camera = scene.camera
-                _, _, current_collection_index, current_shot_index = find_collection_and_shot_index_by_camera(scene.camera)
+                _, _, current_collection_index, current_shot_index = \
+                    find_collection_and_shot_index_by_camera(scene.camera)
 
                 if current_collection_index != index:
                     # If the active shot is not in the current collection, change the shot index
