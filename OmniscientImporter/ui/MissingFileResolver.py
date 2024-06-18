@@ -29,12 +29,12 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
 
         # Have to open again because of this issue : https://blender.stackexchange.com/questions/262627/prevent-properties-dialog-from-closing-during-file-path-selection
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
-            isCameraFileMissing=not os.path.exists(self.CameraPath),
-            isVideoFileMissing=not os.path.exists(self.VideoPath),
-            isGeoFileMissing=not os.path.exists(self.GeoPath),
-            CameraPath=self.CameraPath,
-            VideoPath=self.VideoPath,
-            GeoPath=self.GeoPath)
+                                         isCameraFileMissing=not os.path.exists(self.CameraPath),
+                                         isVideoFileMissing=not os.path.exists(self.VideoPath),
+                                         isGeoFileMissing=not os.path.exists(self.GeoPath),
+                                         CameraPath=self.CameraPath,
+                                         VideoPath=self.VideoPath,
+                                         GeoPath=self.GeoPath)
         return {'FINISHED'}
 
 

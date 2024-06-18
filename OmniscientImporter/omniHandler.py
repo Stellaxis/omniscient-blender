@@ -81,9 +81,9 @@ def loadOmni(self, omni_file):
 
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
-            isVideoFileMissing=isVideoFileMissing,
-            isCameraFileMissing=isCameraFileMissing,
-            isGeoFileMissing=isGeoFileMissing,
-            CameraPath=camera_filepath,
-            VideoPath=video_filepath,
-            GeoPath=geo_filepath)
+                                         isVideoFileMissing=isVideoFileMissing,
+                                         isCameraFileMissing=isCameraFileMissing,
+                                         isGeoFileMissing=isGeoFileMissing,
+                                         CameraPath=camera_filepath,
+                                         VideoPath=video_filepath,
+                                         GeoPath=geo_filepath)
