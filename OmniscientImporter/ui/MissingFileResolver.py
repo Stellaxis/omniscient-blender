@@ -50,9 +50,9 @@ class MissingFileResolver(bpy.types.Operator):
     VideoPath: StringProperty(description="video's absolute file path")
     GeoPath: StringProperty(description="gemoetry's absolute file path")
 
-    CameraFilter: StringProperty(default="*.abc",options={'HIDDEN'})
-    VideoFilter: StringProperty(default="*.mov",options={'HIDDEN'})
-    GeoFilter: StringProperty(default="*.obj",options={'HIDDEN'})
+    CameraFilter: StringProperty(default="*.abc", options={'HIDDEN'})
+    VideoFilter: StringProperty(default="*.mov", options={'HIDDEN'})
+    GeoFilter: StringProperty(default="*.obj", options={'HIDDEN'})
 
     def draw(self, context):
         lay = self.layout
