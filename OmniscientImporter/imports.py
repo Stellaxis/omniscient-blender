@@ -8,7 +8,7 @@ from .omniHandler import loadOmni
 class ImportOmniOperator(Operator, ImportHelper):
     """Import a .omni file"""
     bl_idname = "load.omni"
-    bl_label = "Import .omni" # Import button text
+    bl_label = "Import .omni"  # Import button text
 
     # ImportHelper mixin class uses this
     filename_ext = ".omni"

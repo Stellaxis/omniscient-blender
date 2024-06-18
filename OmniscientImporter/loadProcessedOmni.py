@@ -99,7 +99,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     # -- RENDER --
     bpy.context.scene.render.film_transparent = True
     img = bpy.data.images.load(video_filepath)
-    clip = bpy.data.movieclips.load(video_filepath) # Load only to get fps
+    clip = bpy.data.movieclips.load(video_filepath)  # Load only to get fps
     clip_fps = clip.fps
     width, height = img.size
     frame_duration = img.frame_duration

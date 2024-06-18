@@ -13,7 +13,7 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
     filter_glob: StringProperty()
     filepath: StringProperty(name="File Path", description="Filepath used for setting the path", subtype='FILE_PATH')
 
-    file_type: StringProperty() # Store the type of file being selected
+    file_type: StringProperty()  # Store the type of file being selected
     CameraPath: StringProperty()
     VideoPath: StringProperty()
     GeoPath: StringProperty()
