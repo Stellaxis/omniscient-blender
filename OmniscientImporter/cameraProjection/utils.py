@@ -1,5 +1,6 @@
 import bpy
 
+
 def get_or_create_node(nodes, node_type, location, **kwargs):
     node = next((node for node in nodes if node.type == node_type), None)
     if not node:
@@ -9,11 +10,13 @@ def get_or_create_node(nodes, node_type, location, **kwargs):
         setattr(node.inputs[attr], 'default_value', value)
     return node
 
+
 def create_link(node_tree, from_node, from_socket, to_node, to_socket):
     try:
         node_tree.links.new(from_node.outputs[from_socket], to_node.inputs[to_socket])
     except (IndexError, AttributeError) as e:
         print(f"Failed to create link: {from_node} [{from_socket}] -> {to_node} [{to_socket}]. Error: {e}")
+
 
 def add_driver(node, input_name_or_index, target, target_id_type, data_path, target_is_output=False, is_color=False):
     try:
@@ -58,15 +61,18 @@ def add_driver(node, input_name_or_index, target, target_id_type, data_path, tar
     except KeyError as e:
         print(e)
 
+
 def hide_specific_nodes(node_tree, node_types):
     for node in node_tree.nodes:
         if node.bl_idname in node_types:
             node.hide = True
 
+
 def find_node(nodes, node_type, node_name=None):
     if node_name:
         return next((node for node in nodes if node.type == node_type and node.name == node_name), None)
     return next((node for node in nodes if node.type == node_type), None)
+
 
 def is_blender_4():
     from bpy.app import version

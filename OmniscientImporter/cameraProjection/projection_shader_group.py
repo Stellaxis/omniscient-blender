@@ -1,8 +1,10 @@
 import bpy
 
+
 def is_blender_4():
     from bpy.app import version
     return version >= (4, 0, 0)
+
 
 def create_projection_shader_group():
     node_group_name = "CameraProjector_Omni"

@@ -5,6 +5,7 @@ from .utils import get_or_create_node, create_link, add_driver, hide_specific_no
 from .projection_shader_group import create_projection_shader_group
 from ..ui.utils import find_collection_and_shot_index_by_camera
 
+
 def create_projection_shader(material_name, new_image_name, new_camera):
         
     collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
@@ -171,6 +172,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
     return material
 
+
 def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
     if not material or not material.node_tree:
         return
@@ -243,6 +245,7 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
             except IndexError as e:
                 print(f"Failed to create link: {principled_bsdf_node.name} [0] -> {output_node.name} [0]. Error: {e}")
 
+
 def delete_projection_nodes(camera_name):
     scene = bpy.context.scene
     node_index = scene.camera_projection_nodes.find(camera_name)
@@ -302,6 +305,7 @@ def delete_projection_nodes(camera_name):
         
         # Remove the entry from the scene collection
         scene.camera_projection_nodes.remove(node_index)
+
 
 def reorder_projection_nodes(camera_name, mesh):
     scene = bpy.context.scene
@@ -431,11 +435,14 @@ def reorder_projection_nodes(camera_name, mesh):
         
         ensure_bsdf_connection(material, latest_mix_rgb_visibility_node)
 
+
 def register():
     bpy.types.Scene.camera_projection_nodes = bpy.props.CollectionProperty(type=CameraProjectionNodes)
 
+
 def unregister():
     del bpy.types.Scene.camera_projection_nodes
+
 
 class CameraProjectionNodes(PropertyGroup):
     material_name: StringProperty()

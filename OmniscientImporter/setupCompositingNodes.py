@@ -1,5 +1,6 @@
 import bpy
 
+
 def setup_compositing_nodes(image):
     scene = bpy.context.scene
 

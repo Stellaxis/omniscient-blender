@@ -5,6 +5,7 @@ from bpy.utils.previews import new, remove
 # Global dictionary to store icon previews
 preview_collections = {}
 
+
 def load_custom_icons():
     if "main" in preview_collections:
         return preview_collections["main"]
@@ -24,13 +25,16 @@ def load_custom_icons():
 
     return pcoll
 
+
 def unregister_custom_icons():
     for pcoll in preview_collections.values():
         remove(pcoll)
     preview_collections.clear()
 
+
 def register():
     load_custom_icons()
+
 
 def unregister():
     unregister_custom_icons()

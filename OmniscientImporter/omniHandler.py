@@ -4,6 +4,7 @@ import os
 from . import bl_info
 from .loadProcessedOmni import loadProcessedOmni
 
+
 def loadOmni(self, omni_file):
     isVideoFileMissing = False
     isCameraFileMissing = False

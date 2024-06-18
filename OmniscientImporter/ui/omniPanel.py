@@ -10,9 +10,11 @@ from .utils import adjust_timeline_view, hide_omniscient_collections, clear_moti
 # Property Groups
 # -------------------------------------------------------------------
 
+
 class ShutterSpeedKeyframe(PropertyGroup):
     frame: bpy.props.FloatProperty(name="Frame")
     value: bpy.props.FloatProperty(name="Value")
+
 
 class OmniShot(PropertyGroup):
     id: bpy.props.IntProperty()
@@ -41,6 +43,7 @@ class OmniShot(PropertyGroup):
                     max_id = shot.id
         return max_id + 1
 
+
 class OmniCollection(PropertyGroup):
     shots: bpy.props.CollectionProperty(type=OmniShot)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
@@ -52,6 +55,7 @@ class OmniCollection(PropertyGroup):
 # -------------------------------------------------------------------
 # Handlers
 # -------------------------------------------------------------------
+
 
 @persistent
 def update_active_camera(scene, depsgraph):
@@ -84,6 +88,7 @@ def update_active_camera(scene, depsgraph):
                 scene.Selected_Shot_Index = found_shot_index
                 bpy.ops.object.switch_shot(index=found_shot_index, collection_index=found_collection_index)
 
+
 @persistent
 def update_render_settings(self, context):
     scene = context.scene
@@ -108,6 +113,7 @@ def update_render_settings(self, context):
 # Panels
 # -------------------------------------------------------------------
 
+
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
     bl_idname = "OMNI_PT_import"
@@ -118,6 +124,7 @@ class OMNI_PT_ImportPanel(Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator("load.omni", text="Import .omni")
+
 
 class OMNI_PT_PreferencesPanel(Panel):
     bl_label = "Import Preferences"
@@ -153,6 +160,7 @@ class OMNI_PT_PreferencesPanel(Panel):
         box.label(text="Camera Settings", icon='CAMERA_DATA')
         box.prop(prefs, "bake_camera_keyframes")
 
+
 class OMNI_PT_ShotsPanel(Panel):
     bl_label = "Shots"
     bl_idname = "OMNI_PT_shots"
@@ -182,6 +190,7 @@ class OMNI_PT_ShotsPanel(Panel):
             box.prop(collection, "color_scan", text="Default Color")
         else:
             layout.label(text="No shots imported")
+
 
 class OMNI_PT_VersionWarningPanel(Panel):
     bl_label = "Version Warning"
@@ -220,6 +229,7 @@ class OMNI_PT_VersionWarningPanel(Panel):
 # -------------------------------------------------------------------
 # UI Lists
 # -------------------------------------------------------------------
+
 
 class OMNI_UL_ShotList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
@@ -266,6 +276,7 @@ class OMNI_UL_ShotList(UIList):
 # -------------------------------------------------------------------
 # Operators
 # -------------------------------------------------------------------
+
 
 class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
@@ -316,6 +327,7 @@ class OMNI_OT_SwitchShot(Operator):
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
 
+
 class OMNI_OT_DeleteShot(Operator):
     bl_idname = "object.delete_shot"
     bl_label = "Delete Shot"
@@ -350,6 +362,7 @@ class OMNI_OT_DeleteShot(Operator):
 
                 return {'FINISHED'}
         return {'CANCELLED'}
+
 
 class OMNI_OT_ToggleCameraProjection(Operator):
     bl_idname = "object.toggle_camera_projection"
@@ -387,6 +400,7 @@ def get_collection_names(self, context):
         pass  # Handle the case where the properties are not yet fully available
     return items
 
+
 def selected_collection_name_update(self, context):
     scene = context.scene
     collection_name = scene.Selected_Collection_Name
@@ -413,6 +427,7 @@ def selected_collection_name_update(self, context):
             break
     else:
         scene.Selected_Collection_Index = -1
+
 
 def register():
     bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
@@ -457,6 +472,7 @@ def register():
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
     bpy.app.handlers.depsgraph_update_post.append(update_render_settings)
+
 
 def unregister():
     del bpy.types.WindowManager.popup_text

@@ -4,6 +4,7 @@ from .cameraProjection.cameraProjectionMaterial import create_projection_shader
 from .setupCompositingNodes import setup_compositing_nodes
 import os
 
+
 def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camera_fps=None, camera_settings=None):
     scene = bpy.context.scene
     scene.is_processing_shot = True
@@ -35,10 +36,12 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     else:
         omniscient_collection = existing_omniscient_collection
 
+
     def move_to_collection(obj, collection):
         for coll in obj.users_collection:
             coll.objects.unlink(obj)
         collection.objects.link(obj)
+
 
     def hide_omniscient_collections(scene):
         for omni_collection in scene.Omni_Collections:
@@ -238,9 +241,11 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
 
     scene.is_processing_shot = False
 
+
 def capture_camera_state():
     # Capture the initial state of camera objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'CAMERA')
+
 
 def import_camera(self, camera_filepath):
     if camera_filepath.endswith('.abc'):
@@ -250,6 +255,7 @@ def import_camera(self, camera_filepath):
         self.report({'WARNING'}, "FBX format does not support importing the f-stop setting.")
     elif camera_filepath.endswith(('.usd', '.usdc', '.usda')):
         bpy.ops.wm.usd_import(filepath=camera_filepath)
+
 
 def find_new_camera(initial_state):
     # Find the newly imported camera by comparing the current state to the initial state
@@ -261,9 +267,11 @@ def find_new_camera(initial_state):
     else:
         return None
 
+
 def capture_mesh_state():
     # Capture the initial state of mesh objects in the scene
     return set(obj.name for obj in bpy.context.scene.objects if obj.type == 'MESH')
+
 
 def find_new_mesh(initial_state):
     # Find the newly imported mesh by comparing the current state to the initial state
@@ -275,9 +283,11 @@ def find_new_mesh(initial_state):
     else:
         return None
 
+
 def set_shade_smooth(mesh_obj):
     bpy.context.view_layer.objects.active = mesh_obj
     bpy.ops.object.shade_smooth()
+
 
 def retime_alembic(clip_fps, camera_fps, frame_duration):
     cache_files = bpy.data.cache_files
@@ -305,6 +315,7 @@ def retime_alembic(clip_fps, camera_fps, frame_duration):
     else:
         print("No cache files found.")
 
+
 def apply_camera_settings(camera, settings):
     scene = bpy.context.scene
     for frame_index, frame_data in enumerate(settings, start=1):
@@ -318,6 +329,7 @@ def apply_camera_settings(camera, settings):
         camera.data.keyframe_insert(data_path="lens", frame=frame_index)
         camera.data.dof.keyframe_insert(data_path="focus_distance", frame=frame_index)
 
+
 def save_camera_settings(shot, settings):
     for frame_index, frame_data in enumerate(settings, start=1):
         if 'shutter_speed' in frame_data:
@@ -325,6 +337,7 @@ def save_camera_settings(shot, settings):
             new_keyframe.frame = frame_index
             new_keyframe.value = frame_data['shutter_speed']
             print(f"Added keyframe at frame {new_keyframe.frame} with value {new_keyframe.value}")
+
 
 def calculate_frame_indices(camera_fps, clip_fps, frame_duration):
     first_frame_index = (1 / camera_fps) * clip_fps

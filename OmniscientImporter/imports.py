@@ -4,6 +4,7 @@ from bpy.props import StringProperty
 from bpy.types import Operator
 from .omniHandler import loadOmni
 
+
 class ImportOmniOperator(Operator, ImportHelper):
     """Import a .omni file"""
     bl_idname = "load.omni"
@@ -22,12 +23,15 @@ class ImportOmniOperator(Operator, ImportHelper):
         loadOmni(self, self.filepath)
         return {'FINISHED'}
 
+
 # To add into a dynamic menu
 def menu_func_import(self, context):
     self.layout.operator(ImportOmniOperator.bl_idname, text="Omniscient (.omni)")
 
+
 def register():
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+
 
 def unregister():
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)

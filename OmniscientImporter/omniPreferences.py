@@ -2,6 +2,7 @@ import bpy
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, EnumProperty
 
+
 class OMNI_Preferences(AddonPreferences):
     bl_idname = "OmniscientImporter"
     

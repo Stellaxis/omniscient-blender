@@ -7,6 +7,7 @@ import pkgutil
 import importlib
 from pathlib import Path
 
+
 __all__ = (
     "init",
     "register",
@@ -18,12 +19,14 @@ blender_version = bpy.app.version
 modules = None
 ordered_classes = None
 
+
 def init():
     global modules
     global ordered_classes
 
     modules = get_all_submodules(Path(__file__).parent)
     ordered_classes = get_ordered_classes_to_register(modules)
+
 
 def register():
     for cls in ordered_classes:
@@ -34,6 +37,7 @@ def register():
             continue
         if hasattr(module, "register"):
             module.register()
+
 
 def unregister():
     for cls in reversed(ordered_classes):
@@ -49,12 +53,15 @@ def unregister():
 # Import modules
 #################################################
 
+
 def get_all_submodules(directory):
     return list(iter_submodules(directory, directory.name))
+
 
 def iter_submodules(path, package_name):
     for name in sorted(iter_submodule_names(path)):
         yield importlib.import_module("." + name, package_name)
+
 
 def iter_submodule_names(path, root=""):
     for _, module_name, is_package in pkgutil.iter_modules([str(path)]):
@@ -69,8 +76,10 @@ def iter_submodule_names(path, root=""):
 # Find classes to register
 #################################################
 
+
 def get_ordered_classes_to_register(modules):
     return toposort(get_register_deps_dict(modules))
+
 
 def get_register_deps_dict(modules):
     my_classes = set(iter_my_classes(modules))
@@ -81,9 +90,11 @@ def get_register_deps_dict(modules):
         deps_dict[cls] = set(iter_my_register_deps(cls, my_classes, my_classes_by_idname))
     return deps_dict
 
+
 def iter_my_register_deps(cls, my_classes, my_classes_by_idname):
     yield from iter_my_deps_from_annotations(cls, my_classes)
     yield from iter_my_deps_from_parent_id(cls, my_classes_by_idname)
+
 
 def iter_my_deps_from_annotations(cls, my_classes):
     for value in typing.get_type_hints(cls, {}, {}).values():
@@ -91,6 +102,7 @@ def iter_my_deps_from_annotations(cls, my_classes):
         if dependency is not None:
             if dependency in my_classes:
                 yield dependency
+
 
 def get_dependency_from_annotation(value):
     if blender_version >= (2, 93):
@@ -102,6 +114,7 @@ def get_dependency_from_annotation(value):
                 return value[1]["type"]
     return None
 
+
 def iter_my_deps_from_parent_id(cls, my_classes_by_idname):
     if bpy.types.Panel in cls.__bases__:
         parent_idname = getattr(cls, "bl_parent_id", None)
@@ -110,12 +123,14 @@ def iter_my_deps_from_parent_id(cls, my_classes_by_idname):
             if parent_cls is not None:
                 yield parent_cls
 
+
 def iter_my_classes(modules):
     base_types = get_register_base_types()
     for cls in get_classes_in_modules(modules):
         if any(base in base_types for base in cls.__bases__):
             if not getattr(cls, "is_registered", False):
                 yield cls
+
 
 def get_classes_in_modules(modules):
     classes = set()
@@ -124,10 +139,12 @@ def get_classes_in_modules(modules):
             classes.add(cls)
     return classes
 
+
 def iter_classes_in_module(module):
     for value in module.__dict__.values():
         if inspect.isclass(value):
             yield value
+
 
 def get_register_base_types():
     return set(getattr(bpy.types, name) for name in [
@@ -138,9 +155,9 @@ def get_register_base_types():
         "Gizmo", "GizmoGroup",
     ])
 
-
 # Find order to register to solve dependencies
 #################################################
+
 
 def toposort(deps_dict):
     sorted_list = []

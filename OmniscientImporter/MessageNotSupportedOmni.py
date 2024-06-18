@@ -1,5 +1,6 @@
 import bpy
 
+
 class MessageNotSupportedOmni(bpy.types.Operator):
     bl_idname = "message.not_supported_omni"
     bl_label = ""
