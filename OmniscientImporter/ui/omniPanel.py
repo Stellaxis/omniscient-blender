@@ -444,7 +444,7 @@ def register():
     )
 
     bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(
-        name="Selected Shot Index", 
+        name="Selected Shot Index",
         default=0,
         update=selected_shot_index_update
     )

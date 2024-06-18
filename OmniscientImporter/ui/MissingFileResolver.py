@@ -84,7 +84,7 @@ class MissingFileResolver(bpy.types.Operator):
         else:
             row.prop(self, "VideoPath", text="Video", icon='CHECKBOX_HLT')
 
-        row = lay.row(align=True) 
+        row = lay.row(align=True)
         if self.isGeoFileMissing:
             row.prop(self, "GeoPath", text="Geometry", icon='ERROR')
             op = row.operator("wm.select_file", text="", icon='FILE_FOLDER')

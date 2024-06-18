@@ -63,7 +63,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     mix_rgb_visibility_node = nodes.new("ShaderNodeMixRGB")
     mix_rgb_visibility_node.location = (-200.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     mix_rgb_visibility_node.blend_type = 'MIX'
-    mix_rgb_visibility_node.name = "MixRGBVisibilityNode" 
+    mix_rgb_visibility_node.name = "MixRGBVisibilityNode"
 
     # Add drivers for mix rgb colors
     if collection:
@@ -76,7 +76,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     multiply_visibility_node = nodes.new("ShaderNodeMath")
     multiply_visibility_node.location = (-400.0, -vertical_spacing * (len(existing_image_nodes) + 1))
     multiply_visibility_node.operation = 'MULTIPLY'
-    multiply_visibility_node.name = "MultiplyVisibilityNode" 
+    multiply_visibility_node.name = "MultiplyVisibilityNode"
     create_link(material.node_tree, new_image_texture_node, 1, multiply_visibility_node, 0)
 
     def add_driver_for_multiply(node, collection_index, shot_index, data_path):
@@ -118,7 +118,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
 
         color_ramp_emission_node = nodes.new("ShaderNodeValToRGB")
         color_ramp_emission_node.location = (100.0, bsdf_vertical_position - 350)
-        color_ramp_emission_node.name = "ColorRampEmissionNode" 
+        color_ramp_emission_node.name = "ColorRampEmissionNode"
 
         value_node = nodes.new("ShaderNodeValue")
         value_node.location = (200.0, bsdf_vertical_position - 650)

@@ -113,7 +113,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
 
     # Adjust the timeline view to fit the entire range of frames
     for area in bpy.context.screen.areas:
-        if area.type == 'DOPESHEET_EDITOR': 
+        if area.type == 'DOPESHEET_EDITOR':
             override = bpy.context.copy()
             override["area"] = area
             override["region"] = area.regions[-1]
@@ -190,7 +190,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
             imported_mesh.is_shadow_catcher = True
             imported_mesh.is_holdout = False  # Ensure holdout is disabled if shadow catcher is enabled
         elif prefs.use_holdout:
-            imported_mesh.is_holdout = True 
+            imported_mesh.is_holdout = True
 
         # Assign the material to the imported mesh
         if material:
