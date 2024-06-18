@@ -86,5 +86,4 @@ def loadOmni(self, omni_file):
             isGeoFileMissing=isGeoFileMissing,
             CameraPath=camera_filepath,
             VideoPath=video_filepath,
-            GeoPath=geo_filepath
-        )
+            GeoPath=geo_filepath)

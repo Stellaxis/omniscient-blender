@@ -34,8 +34,7 @@ class SelectFileOperator(bpy.types.Operator, ImportHelper):
             isGeoFileMissing=not os.path.exists(self.GeoPath),
             CameraPath=self.CameraPath,
             VideoPath=self.VideoPath,
-            GeoPath=self.GeoPath
-        )
+            GeoPath=self.GeoPath)
         return {'FINISHED'}
 
 
