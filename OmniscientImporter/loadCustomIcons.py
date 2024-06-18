@@ -1,4 +1,3 @@
-import bpy
 import os
 from bpy.utils.previews import new, remove
 

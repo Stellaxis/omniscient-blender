@@ -1,4 +1,3 @@
-import bpy
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, EnumProperty
 

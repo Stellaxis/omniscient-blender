@@ -1,4 +1,3 @@
-import bpy
 
 
 def get_or_create_node(nodes, node_type, location, **kwargs):
