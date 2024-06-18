@@ -311,7 +311,7 @@ def reorder_projection_nodes(camera_name, mesh):
     scene = bpy.context.scene
 
     if not mesh:
-        print(f"Error: Mesh not provided or not found.")
+        print("Error: Mesh not provided or not found.")
         return
 
     print("Current camera_projection_nodes:")
