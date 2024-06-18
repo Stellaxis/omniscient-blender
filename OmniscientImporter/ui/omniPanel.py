@@ -82,7 +82,7 @@ def update_active_camera(scene, depsgraph):
 
             if (current_collection_index >= len(scene.Omni_Collections) or
                 current_shot_index >= len(scene.Omni_Collections[current_collection_index].shots) or
-                found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
+                    found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
 
                 scene.Selected_Collection_Index = found_collection_index
                 scene.Selected_Shot_Index = found_shot_index
