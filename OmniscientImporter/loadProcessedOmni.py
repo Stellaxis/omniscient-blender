@@ -13,7 +13,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
         return os.path.splitext(os.path.basename(filepath))[0]
 
     base_name = get_base_name(geo_filepath).split('.')[0]
-    
+
     def names_match(name1, name2):
         return name1.split('.')[0] == name2.split('.')[0]
 
@@ -192,7 +192,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
             imported_mesh.is_holdout = False  # Ensure holdout is disabled if shadow catcher is enabled
         elif prefs.use_holdout:
             imported_mesh.is_holdout = True 
-        
+
         # Assign the material to the imported mesh
         if material:
             if imported_mesh.data.materials:
@@ -293,20 +293,20 @@ def retime_alembic(clip_fps, camera_fps, frame_duration):
     cache_files = bpy.data.cache_files
     if cache_files:
         last_cache_file = cache_files[-1]
-        
+
         last_cache_file.override_frame = True
-        
+
         # Calculate new first and last frame indices based on FPS changes
         first_time_value, new_total_time_including_first = calculate_frame_indices(camera_fps, clip_fps, frame_duration)
-        
+
         # Insert the starting frame keyframe
         last_cache_file.frame = first_time_value
         last_cache_file.keyframe_insert(data_path="frame", frame=1)
-        
+
         # Insert the keyframe for the new end frame
         last_cache_file.frame = new_total_time_including_first
         last_cache_file.keyframe_insert(data_path="frame", frame=frame_duration)
-        
+
         # Ensure linear interpolation for all keyframes in the action's fcurves
         if last_cache_file.animation_data and last_cache_file.animation_data.action:
             for fcurve in last_cache_file.animation_data.action.fcurves:

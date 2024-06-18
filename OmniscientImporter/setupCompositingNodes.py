@@ -139,7 +139,7 @@ def setup_compositing_nodes(image):
         find_or_create_var(driver, var_name_scene, 'SCENE', bpy.context.scene, scene_data_path)
         find_or_create_var(driver, var_name_image, 'IMAGE', image, image_data_path)
         find_or_create_var(driver, var_name_percentage, 'SCENE', bpy.context.scene, "render.resolution_percentage")
-        
+
         driver.expression = expression
 
     # Create expressions for the drivers

@@ -17,7 +17,7 @@ def loadOmni(self, omni_file):
     # Load the json file
     with open(omni_file, 'r') as f:
         data = json.load(f)
-        
+
     # Check the minimum addon version specified in the .json file
     blender_data = data['blender']
     if blender_data:

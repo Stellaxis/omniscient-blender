@@ -83,7 +83,7 @@ def update_active_camera(scene, depsgraph):
             if (current_collection_index >= len(scene.Omni_Collections) or
                 current_shot_index >= len(scene.Omni_Collections[current_collection_index].shots) or
                 found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
-                
+
                 scene.Selected_Collection_Index = found_collection_index
                 scene.Selected_Shot_Index = found_shot_index
                 bpy.ops.object.switch_shot(index=found_shot_index, collection_index=found_collection_index)
@@ -94,7 +94,7 @@ def update_render_settings(self, context):
     scene = context.scene
     if scene.is_processing_shot:
         return
-    
+
     current_collection_index = scene.Selected_Collection_Index
     current_shot_index = scene.Selected_Shot_Index
 
@@ -216,13 +216,13 @@ class OMNI_PT_VersionWarningPanel(Panel):
                 row = layout.row()
                 row.alert = True
                 row.label(text=lines[0], icon='ERROR')
-                
+
                 # Center the remaining lines without error icon
                 for line in lines[1:]:
                     row = layout.row()
                     row.alignment = 'CENTER'
                     row.label(text=line)
-            
+
             row = layout.row()
             row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
 
@@ -237,7 +237,7 @@ class OMNI_UL_ShotList(UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
             row.prop(shot, "name", text="", emboss=False)
-            
+
             # Custom camera projector icons
             pcoll = preview_collections["main"]
             icon_on = pcoll["icon_cameraProjector_on"].icon_id
@@ -257,10 +257,10 @@ class OMNI_UL_ShotList(UIList):
     def filter_items(self, context, data, property):
         flt_flags = []
         flt_neworder = []
-        
+
         shots = getattr(data, property)
         scenes = sorted({shot.collection.name for shot in shots if shot.collection})
-        
+
         for shot in shots:
             if shot.collection and shot.collection.name in scenes:
                 flt_flags.append(self.bitflag_filter_item)
@@ -322,7 +322,7 @@ class OMNI_OT_SwitchShot(Operator):
 
                 if scene.Selected_Collection_Name != shot.collection.name:
                     scene.Selected_Collection_Name = shot.collection.name
-                
+
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
@@ -423,7 +423,7 @@ def selected_collection_name_update(self, context):
                     scene.Selected_Shot_Index = current_shot_index
             else:
                 scene.Selected_Shot_Index = -1
-                
+
             break
     else:
         scene.Selected_Collection_Index = -1
@@ -442,7 +442,7 @@ def register():
         name="Scan_Omni",
         type=bpy.types.Object
     )
-    
+
     bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(
         name="Selected Shot Index", 
         default=0,

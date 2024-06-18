@@ -7,7 +7,7 @@ from ..ui.utils import find_collection_and_shot_index_by_camera
 
 
 def create_projection_shader(material_name, new_image_name, new_camera):
-        
+
     collection, shot, collection_index, shot_index = find_collection_and_shot_index_by_camera(new_camera)
 
     material = bpy.data.materials.get(material_name) or bpy.data.materials.new(name=material_name)
@@ -129,7 +129,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         multiply_emission_node.location = (400.0, bsdf_vertical_position - 500)
         multiply_emission_node.operation = 'MULTIPLY'
         multiply_emission_node.name = "MultiplyEmissionNode"
-        
+
         mix_rgb_emission_node = nodes.new("ShaderNodeMixRGB")
         mix_rgb_emission_node.location = (600.0, bsdf_vertical_position - 550.0)
         mix_rgb_emission_node.hide = True
@@ -153,7 +153,7 @@ def create_projection_shader(material_name, new_image_name, new_camera):
         value_node.location = (200.0, bsdf_vertical_position - 650)
         multiply_emission_node.location = (400.0, bsdf_vertical_position - 500)
         mix_rgb_emission_node.location = (600.0, bsdf_vertical_position - 550.0)
-    
+
     node_types_to_hide = {"ShaderNodeMath"}
     hide_specific_nodes(material.node_tree, node_types_to_hide)
     hide_specific_nodes(node_group, node_types_to_hide)
@@ -181,7 +181,7 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
     links = material.node_tree.links
     principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
     output_node = find_node(nodes, 'OUTPUT_MATERIAL')
-    
+
     if latest_mix_rgb_visibility_node and principled_bsdf_node:
         # Remove existing links to the BSDF node
         links_to_remove = [link for link in links if link.to_node == principled_bsdf_node]
@@ -203,7 +203,7 @@ def ensure_bsdf_connection(material, latest_mix_rgb_visibility_node):
                 print(f"{emission_input_name} input not found in {principled_bsdf_node.name}")
         except Exception as e:
             print(f"Failed to create link: {latest_mix_rgb_visibility_node.name} [0] -> {principled_bsdf_node.name} [{emission_input_name}]. Error: {e}")
-                
+
         # Create a new link from the mix_rgb_emission_node to the Emission Strength input of the BSDF node
         mix_rgb_emission_node = find_node(nodes, 'MIX_RGB', 'MixRGBEmissionNode')
         if mix_rgb_emission_node:
@@ -256,7 +256,7 @@ def delete_projection_nodes(camera_name):
             nodes = material.node_tree.nodes
             links = material.node_tree.links
             node_names = [node_entry.tex_coord_node, node_entry.image_texture_node, node_entry.camera_projector_group_node, node_entry.mix_rgb_visibility_node, node_entry.multiply_visibility_node]
-            
+
             principled_bsdf_node = find_node(nodes, 'BSDF_PRINCIPLED')
             output_node = find_node(nodes, 'OUTPUT_MATERIAL')
 
@@ -277,14 +277,14 @@ def delete_projection_nodes(camera_name):
             for node_name in node_names:
                 if node_name in nodes:
                     nodes.remove(nodes[node_name])
-            
+
             # Reconnect the previous mix node to the next mix node, if they exist
             if prev_mix_rgb_visibility_node and next_mix_rgb_visibility_node:
                 # Remove the specific link from the deleted mix node to the next mix node
                 links_to_remove = [link for link in links if link.to_node == next_mix_rgb_visibility_node and link.from_node.name == node_entry.mix_rgb_visibility_node]
                 for link in links_to_remove:
                     links.remove(link)
-                
+
                 # Reconnect previous mix to next mix
                 try:
                     links.new(prev_mix_rgb_visibility_node.outputs[0], next_mix_rgb_visibility_node.inputs[1])
@@ -302,7 +302,7 @@ def delete_projection_nodes(camera_name):
 
             # Ensure the latest mix_rgb_visibility_node is connected to the BSDF node
             ensure_bsdf_connection(material, latest_mix_rgb_visibility_node)
-        
+
         # Remove the entry from the scene collection
         scene.camera_projection_nodes.remove(node_index)
 
@@ -432,7 +432,7 @@ def reorder_projection_nodes(camera_name, mesh):
         if material and material.node_tree:
             nodes = material.node_tree.nodes
             latest_mix_rgb_visibility_node = nodes.get(last_entry['mix_rgb_visibility_node'])
-        
+
         ensure_bsdf_connection(material, latest_mix_rgb_visibility_node)
 
 

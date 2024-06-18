@@ -99,6 +99,6 @@ class MissingFileResolver(bpy.types.Operator):
     def execute(self, context):
         loadProcessedOmni(self, self.VideoPath, self.CameraPath, self.GeoPath)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)

@@ -6,13 +6,13 @@ class MessageNotSupportedOmni(bpy.types.Operator):
     bl_label = ""
     minimum_addon_version: bpy.props.StringProperty()
     current_version_str: bpy.props.StringProperty()
-    
+
     def invoke(self, context, event):
         return context.window_manager.invoke_popup(self)
-    
+
     def execute(self, context):
         return {'FINISHED'}
-    
+
     def draw(self, context):
         layout = self.layout
         layout.label(text=str(f"Update needed: version {self.minimum_addon_version} or higher"))

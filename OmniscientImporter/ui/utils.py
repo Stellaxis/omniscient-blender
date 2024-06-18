@@ -76,7 +76,7 @@ def get_selected_collection_and_shot(scene, collection_index=None, shot_index=No
 def selected_shot_index_update(self, context):
     scene = context.scene
     collection, current_shot = get_selected_collection_and_shot(scene)
-    
+
     if collection and current_shot:
         if scene.camera != current_shot.camera:
             bpy.ops.object.switch_shot(index=scene.Selected_Shot_Index, collection_index=scene.Selected_Collection_Index)
