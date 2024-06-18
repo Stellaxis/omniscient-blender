@@ -35,12 +35,10 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     else:
         omniscient_collection = existing_omniscient_collection
 
-
     def move_to_collection(obj, collection):
         for coll in obj.users_collection:
             coll.objects.unlink(obj)
         collection.objects.link(obj)
-
 
     def hide_omniscient_collections(scene):
         for omni_collection in scene.Omni_Collections:
