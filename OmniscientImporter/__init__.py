@@ -13,6 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
+from . import auto_load
+
 bl_info = {
     "name": "Import Omniscient(.omni)",
     "author": "Stellaxis OÜ",
@@ -23,8 +26,6 @@ bl_info = {
     "warning": "",
     "category": "Import-Export"
 }
-
-from . import auto_load
 
 auto_load.init()
 
