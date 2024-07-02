@@ -1,0 +1,22 @@
+schema_version = "1.0.0"
+
+id = "omniscient"
+version = "2.3.0"
+name = "Omniscient Importer"
+tagline = "Automated scene setup for shots recorded with Omniscient iOS app"
+maintainer = "Stellaxis OÜ <hello@omniscient-app.com>"
+type = "add-on"
+
+website = "https://omniscient-app.com/"
+
+# https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
+tags = ["Import-Export"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+[permissions]
+files = "Import .omni file from disk"
