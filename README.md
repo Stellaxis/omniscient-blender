@@ -37,6 +37,24 @@ For support with the Omniscient Blender addon, please contact us through our [we
 
 We welcome contributions to the Omniscient Blender addon.
 
+Please follow Flake8 rules to ensure code quality and consistency.
+
+### Checking Code Compliance
+
+To check the compliance of your code with Flake8 rules, follow these steps:
+
+1. Install Flake8:
+
+    ```bash
+    python -m pip install flake8
+    ```
+
+2. Run Flake8 on your code:
+
+    ```bash
+    flake8 .
+    ```
+
 ## License
 
 The Omniscient Blender addon is licensed under the [GPL License](LICENSE).

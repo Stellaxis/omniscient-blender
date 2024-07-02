@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator
 
+
 class OMNI_OT_BakeCameraKeyframes(Operator):
     bl_idname = "object.bake_camera_keyframes"
     bl_label = "Bake Camera Keyframes"

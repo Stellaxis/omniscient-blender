@@ -13,23 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-bl_info = {
-    "name" : "Import Omniscient(.omni)",
-    "author" : "Stellaxis OÜ",
-    "description" : "Import data recorded by the Omniscient iOS application.",
-    "blender" : (3, 0, 0),
-    "version" : (2, 2, 0),
-    "location" : "File > Import > Omniscient (.omni)",
-    "warning" : "",
-    "category" : "Import-Export"
-}
 
 from . import auto_load
 
+bl_info = {
+    "name": "Import Omniscient(.omni)",
+    "author": "Stellaxis OÜ",
+    "description": "Import data recorded by the Omniscient iOS application.",
+    "blender": (3, 0, 0),
+    "version": (2, 2, 0),
+    "location": "File > Import > Omniscient (.omni)",
+    "warning": "",
+    "category": "Import-Export"
+}
+
 auto_load.init()
+
 
 def register():
     auto_load.register()
+
 
 def unregister():
     auto_load.unregister()

@@ -4,6 +4,7 @@ import os
 from . import bl_info
 from .loadProcessedOmni import loadProcessedOmni
 
+
 def loadOmni(self, omni_file):
     isVideoFileMissing = False
     isCameraFileMissing = False
@@ -16,7 +17,7 @@ def loadOmni(self, omni_file):
     # Load the json file
     with open(omni_file, 'r') as f:
         data = json.load(f)
-        
+
     # Check the minimum addon version specified in the .json file
     blender_data = data['blender']
     if blender_data:
@@ -26,7 +27,9 @@ def loadOmni(self, omni_file):
             current_version = bl_info['version']
             current_version_str = ".".join(str(x) for x in current_version)
             if current_version_str < minimum_addon_version:
-                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT', minimum_addon_version=minimum_addon_version, current_version_str=current_version_str)
+                bpy.ops.message.not_supported_omni('INVOKE_DEFAULT',
+                                                   minimum_addon_version=minimum_addon_version,
+                                                   current_version_str=current_version_str)
                 return {'CANCELLED'}
 
         # Check if the current version is lower than the ideal version
@@ -80,10 +83,9 @@ def loadOmni(self, omni_file):
 
     else:
         bpy.ops.wm.missing_file_resolver('INVOKE_DEFAULT',
-            isVideoFileMissing=isVideoFileMissing,
-            isCameraFileMissing=isCameraFileMissing,
-            isGeoFileMissing=isGeoFileMissing,
-            CameraPath=camera_filepath,
-            VideoPath=video_filepath,
-            GeoPath=geo_filepath
-        )
+                                         isVideoFileMissing=isVideoFileMissing,
+                                         isCameraFileMissing=isCameraFileMissing,
+                                         isGeoFileMissing=isGeoFileMissing,
+                                         CameraPath=camera_filepath,
+                                         VideoPath=video_filepath,
+                                         GeoPath=geo_filepath)

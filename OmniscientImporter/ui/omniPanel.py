@@ -3,16 +3,26 @@ from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
-from ..loadCustomIcons import load_custom_icons, preview_collections
-from .utils import adjust_timeline_view, hide_omniscient_collections, clear_motion_blur_keyframes, update_related_drivers, selected_shot_index_update, get_selected_collection_and_shot, find_collection_and_shot_index_by_camera
+from ..loadCustomIcons import preview_collections
+from .utils import (
+    adjust_timeline_view, 
+    hide_omniscient_collections, 
+    clear_motion_blur_keyframes, 
+    update_related_drivers, 
+    selected_shot_index_update, 
+    get_selected_collection_and_shot, 
+    find_collection_and_shot_index_by_camera
+)
 
 # -------------------------------------------------------------------
 # Property Groups
 # -------------------------------------------------------------------
 
+
 class ShutterSpeedKeyframe(PropertyGroup):
     frame: bpy.props.FloatProperty(name="Frame")
     value: bpy.props.FloatProperty(name="Value")
+
 
 class OmniShot(PropertyGroup):
     id: bpy.props.IntProperty()
@@ -41,17 +51,30 @@ class OmniShot(PropertyGroup):
                     max_id = shot.id
         return max_id + 1
 
+
 class OmniCollection(PropertyGroup):
     shots: bpy.props.CollectionProperty(type=OmniShot)
     collection: bpy.props.PointerProperty(type=bpy.types.Collection)
-    expanded: bpy.props.BoolProperty(name="Expanded", default=False)
-    emission_value: bpy.props.FloatProperty(name="Emission Value", default=0.0, min=0.0, max=1000.0)
-    color_scan: bpy.props.FloatVectorProperty(name="Color scan", subtype='COLOR', min=0.0, max=1.0, default=(0.18, 0.18, 0.18))
-    mix_rgb_emission_input: bpy.props.FloatProperty(name="Mix RGB Emission Input", default=0.0, min=0.0, max=1.0)
+    expanded: bpy.props.BoolProperty(name="Expanded",
+                                     default=False)
+    emission_value: bpy.props.FloatProperty(name="Emission Value",
+                                            default=0.0,
+                                            min=0.0,
+                                            max=1000.0)
+    color_scan: bpy.props.FloatVectorProperty(name="Color scan",
+                                              subtype='COLOR',
+                                              min=0.0,
+                                              max=1.0,
+                                              default=(0.18, 0.18, 0.18))
+    mix_rgb_emission_input: bpy.props.FloatProperty(name="Mix RGB Emission Input",
+                                                    default=0.0,
+                                                    min=0.0,
+                                                    max=1.0)
 
 # -------------------------------------------------------------------
 # Handlers
 # -------------------------------------------------------------------
+
 
 @persistent
 def update_active_camera(scene, depsgraph):
@@ -78,18 +101,19 @@ def update_active_camera(scene, depsgraph):
 
             if (current_collection_index >= len(scene.Omni_Collections) or
                 current_shot_index >= len(scene.Omni_Collections[current_collection_index].shots) or
-                found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
-                
+                    found_shot != scene.Omni_Collections[current_collection_index].shots[current_shot_index]):
+
                 scene.Selected_Collection_Index = found_collection_index
                 scene.Selected_Shot_Index = found_shot_index
                 bpy.ops.object.switch_shot(index=found_shot_index, collection_index=found_collection_index)
+
 
 @persistent
 def update_render_settings(self, context):
     scene = context.scene
     if scene.is_processing_shot:
         return
-    
+
     current_collection_index = scene.Selected_Collection_Index
     current_shot_index = scene.Selected_Shot_Index
 
@@ -108,6 +132,7 @@ def update_render_settings(self, context):
 # Panels
 # -------------------------------------------------------------------
 
+
 class OMNI_PT_ImportPanel(Panel):
     bl_label = "Omniscient"
     bl_idname = "OMNI_PT_import"
@@ -118,6 +143,7 @@ class OMNI_PT_ImportPanel(Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator("load.omni", text="Import .omni")
+
 
 class OMNI_PT_PreferencesPanel(Panel):
     bl_label = "Import Preferences"
@@ -153,6 +179,7 @@ class OMNI_PT_PreferencesPanel(Panel):
         box.label(text="Camera Settings", icon='CAMERA_DATA')
         box.prop(prefs, "bake_camera_keyframes")
 
+
 class OMNI_PT_ShotsPanel(Panel):
     bl_label = "Shots"
     bl_idname = "OMNI_PT_shots"
@@ -183,6 +210,7 @@ class OMNI_PT_ShotsPanel(Panel):
         else:
             layout.label(text="No shots imported")
 
+
 class OMNI_PT_VersionWarningPanel(Panel):
     bl_label = "Version Warning"
     bl_idname = "OMNI_PT_version_warning"
@@ -207,19 +235,21 @@ class OMNI_PT_VersionWarningPanel(Panel):
                 row = layout.row()
                 row.alert = True
                 row.label(text=lines[0], icon='ERROR')
-                
+
                 # Center the remaining lines without error icon
                 for line in lines[1:]:
                     row = layout.row()
                     row.alignment = 'CENTER'
                     row.label(text=line)
-            
+
             row = layout.row()
-            row.operator("wm.url_open", text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+            row.operator("wm.url_open",
+                         text="Update").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
 
 # -------------------------------------------------------------------
 # UI Lists
 # -------------------------------------------------------------------
+
 
 class OMNI_UL_ShotList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
@@ -227,7 +257,7 @@ class OMNI_UL_ShotList(UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
             row.prop(shot, "name", text="", emboss=False)
-            
+
             # Custom camera projector icons
             pcoll = preview_collections["main"]
             icon_on = pcoll["icon_cameraProjector_on"].icon_id
@@ -247,10 +277,10 @@ class OMNI_UL_ShotList(UIList):
     def filter_items(self, context, data, property):
         flt_flags = []
         flt_neworder = []
-        
+
         shots = getattr(data, property)
         scenes = sorted({shot.collection.name for shot in shots if shot.collection})
-        
+
         for shot in shots:
             if shot.collection and shot.collection.name in scenes:
                 flt_flags.append(self.bitflag_filter_item)
@@ -267,6 +297,7 @@ class OMNI_UL_ShotList(UIList):
 # Operators
 # -------------------------------------------------------------------
 
+
 class OMNI_OT_SwitchShot(Operator):
     bl_idname = "object.switch_shot"
     bl_label = "Switch Shot"
@@ -276,7 +307,11 @@ class OMNI_OT_SwitchShot(Operator):
 
     def execute(self, context):
         scene = context.scene
-        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        collection_index = (
+            self.collection_index 
+            if self.collection_index is not None 
+            else scene.Selected_Collection_Index
+        )
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
         collection, shot = get_selected_collection_and_shot(scene, collection_index, shot_index)
@@ -311,10 +346,11 @@ class OMNI_OT_SwitchShot(Operator):
 
                 if scene.Selected_Collection_Name != shot.collection.name:
                     scene.Selected_Collection_Name = shot.collection.name
-                
+
             # Update compositing nodes with the correct image
             setup_compositing_nodes(shot.video)
         return {'FINISHED'}
+
 
 class OMNI_OT_DeleteShot(Operator):
     bl_idname = "object.delete_shot"
@@ -325,7 +361,8 @@ class OMNI_OT_DeleteShot(Operator):
 
     def execute(self, context):
         scene = context.scene
-        collection_index = self.collection_index if self.collection_index is not None else scene.Selected_Collection_Index
+        collection_index = self.collection_index if self.collection_index is not None else \
+            scene.Selected_Collection_Index
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
         if collection_index < len(scene.Omni_Collections):
@@ -350,6 +387,7 @@ class OMNI_OT_DeleteShot(Operator):
 
                 return {'FINISHED'}
         return {'CANCELLED'}
+
 
 class OMNI_OT_ToggleCameraProjection(Operator):
     bl_idname = "object.toggle_camera_projection"
@@ -387,6 +425,7 @@ def get_collection_names(self, context):
         pass  # Handle the case where the properties are not yet fully available
     return items
 
+
 def selected_collection_name_update(self, context):
     scene = context.scene
     collection_name = scene.Selected_Collection_Name
@@ -398,8 +437,9 @@ def selected_collection_name_update(self, context):
 
             if collection.shots:
                 # Check if the active camera is already in the current collection
-                current_camera = scene.camera
-                _, _, current_collection_index, current_shot_index = find_collection_and_shot_index_by_camera(scene.camera)
+                # current_camera = scene.camera
+                _, _, current_collection_index, current_shot_index = \
+                    find_collection_and_shot_index_by_camera(scene.camera)
 
                 if current_collection_index != index:
                     # If the active shot is not in the current collection, change the shot index
@@ -409,10 +449,11 @@ def selected_collection_name_update(self, context):
                     scene.Selected_Shot_Index = current_shot_index
             else:
                 scene.Selected_Shot_Index = -1
-                
+
             break
     else:
         scene.Selected_Collection_Index = -1
+
 
 def register():
     bpy.types.WindowManager.popup_text = bpy.props.StringProperty(
@@ -427,9 +468,9 @@ def register():
         name="Scan_Omni",
         type=bpy.types.Object
     )
-    
+
     bpy.types.Scene.Selected_Shot_Index = bpy.props.IntProperty(
-        name="Selected Shot Index", 
+        name="Selected Shot Index",
         default=0,
         update=selected_shot_index_update
     )
@@ -457,6 +498,7 @@ def register():
 
     bpy.app.handlers.depsgraph_update_post.append(update_active_camera)
     bpy.app.handlers.depsgraph_update_post.append(update_render_settings)
+
 
 def unregister():
     del bpy.types.WindowManager.popup_text

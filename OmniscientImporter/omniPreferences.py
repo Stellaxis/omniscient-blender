@@ -1,10 +1,10 @@
-import bpy
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, EnumProperty
 
+
 class OMNI_Preferences(AddonPreferences):
     bl_idname = "OmniscientImporter"
-    
+
     use_shadow_catcher: BoolProperty(
         name="Use Shadow Catcher",
         description="Automatically set imported mesh as shadow catcher",
@@ -38,7 +38,7 @@ class OMNI_Preferences(AddonPreferences):
         description="Activate depth of field for the renderer",
         default=True
     )
-    
+
     bake_camera_keyframes: BoolProperty(
         name="Bake Camera Keyframes",
         description="Bake camera keyframes after import",
@@ -60,14 +60,16 @@ class OMNI_Preferences(AddonPreferences):
         box.prop(self, "renderer")
         box.prop(self, "enable_motion_blur")
         box.prop(self, "enable_dof")
-        
+
         # Bake Camera Keyframes
         box = layout.box()
         box.label(text="Camera Settings", icon='CAMERA_DATA')
         box.prop(self, "bake_camera_keyframes")
-        
+
         # Useful Links
         row = layout.row()
         row.label(text="Useful links :")
-        row.operator("wm.url_open", text="Documentation").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
-        row.operator("wm.url_open", text="Contact Us").url = "https://learn.omniscient-app.com/contact-us"
+        row.operator("wm.url_open",
+                     text="Documentation").url = "https://learn.omniscient-app.com/tutorial-thridParty/Blender"
+        row.operator("wm.url_open",
+                     text="Contact Us").url = "https://learn.omniscient-app.com/contact-us"

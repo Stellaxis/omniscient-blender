@@ -1,0 +1,34 @@
+[flake8]
+# Follow https://developer.blender.org/docs/handbook/addons/guidelines/#style-recommendations
+
+# Line length
+max-line-length = 120
+# Indentation
+indent-size = 4
+# Maximum script length
+max-complexity = 10
+max-doc-length = 1000
+
+ignore = 
+  # Defaults
+  E121,E123,E126,E226,E24,E704,W503,W504,
+  # Do not use bare except
+  E722,
+  # Syntax error in forward annotation
+  F722,
+  # Undefined name 'name'
+  F821,
+  # Undefined name 'name' in __all__
+  F822
+  # Two blank lines between functions and classes
+  E302, E305,
+  # Spaces around operators
+  E221, E222, E223,
+  # Trailing whitespace
+  W291, W293,
+  # Docstring conventions
+  D100, D101, D102, D103, D104, D105, D107,
+  # Variable naming conventions
+  N802, N803, N806,
+  # Deprecated Python API usage
+  B301, B302, B303, B304, B305

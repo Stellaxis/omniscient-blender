@@ -1,10 +1,12 @@
 import bpy
 
+
 def hide_omniscient_collections(scene):
     for omni_collection in scene.Omni_Collections:
         if omni_collection.collection:
             omni_collection.collection.hide_viewport = True
             omni_collection.collection.hide_render = True
+
 
 def clear_motion_blur_keyframes(scene):
     # Ensure the scene's animation data exists
@@ -16,6 +18,7 @@ def clear_motion_blur_keyframes(scene):
                 if fcurve.data_path == "render.motion_blur_shutter":
                     action.fcurves.remove(fcurve)
                     break
+
 
 def adjust_timeline_view(context, frame_start, frame_end):
     # Set the preview range
@@ -32,6 +35,7 @@ def adjust_timeline_view(context, frame_start, frame_end):
             with context.temp_override(**override):
                 bpy.ops.action.view_all()
             break
+
 
 def update_related_drivers(shot):
     # Debug print to trace function call
@@ -50,11 +54,13 @@ def update_related_drivers(shot):
                     data_path = fcurve.data_path
                     if '.inputs[' in data_path and data_path.endswith('default_value'):
                         update_driver(fcurve.driver)
-                        
+
+
 def update_driver(obj):
     if obj.animation_data:
         for fc in obj.animation_data.drivers:
             fc.driver.expression = fc.driver.expression
+
 
 def get_selected_collection_and_shot(scene, collection_index=None, shot_index=None):
     collection_index = collection_index if collection_index is not None else scene.Selected_Collection_Index
@@ -66,13 +72,16 @@ def get_selected_collection_and_shot(scene, collection_index=None, shot_index=No
             return collection, collection.shots[shot_index]
     return None, None
 
+
 def selected_shot_index_update(self, context):
     scene = context.scene
     collection, current_shot = get_selected_collection_and_shot(scene)
-    
+
     if collection and current_shot:
         if scene.camera != current_shot.camera:
-            bpy.ops.object.switch_shot(index=scene.Selected_Shot_Index, collection_index=scene.Selected_Collection_Index)
+            bpy.ops.object.switch_shot(index=scene.Selected_Shot_Index,
+                                       collection_index=scene.Selected_Collection_Index)
+
 
 def find_collection_and_shot_index_by_camera(camera):
     scene = bpy.context.scene
