@@ -120,7 +120,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
             break
 
     # Get preferences
-    prefs = bpy.context.preferences.addons['OmniscientImporter'].preferences
+    prefs = bpy.context.preferences.addons[__package__].preferences
 
     # Set renderer settings
     bpy.context.scene.render.engine = prefs.renderer

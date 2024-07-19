@@ -3,7 +3,7 @@ from bpy.props import BoolProperty, EnumProperty
 
 
 class OMNI_Preferences(AddonPreferences):
-    bl_idname = "OmniscientImporter"
+    bl_idname = __package__
 
     use_shadow_catcher: BoolProperty(
         name="Use Shadow Catcher",

@@ -157,7 +157,10 @@ class OMNI_PT_PreferencesPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        prefs = context.preferences.addons['OmniscientImporter'].preferences
+
+        # Extract the base package name by removing the last part
+        base_package = '.'.join(__package__.split('.')[:-1])
+        prefs = context.preferences.addons[base_package].preferences
 
         # Scene Options Panel
         box = layout.box()
