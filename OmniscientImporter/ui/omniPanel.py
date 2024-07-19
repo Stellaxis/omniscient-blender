@@ -3,7 +3,7 @@ from bpy.app.handlers import persistent
 from bpy.types import Panel, Operator, PropertyGroup, UIList
 from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes, reorder_projection_nodes
 from ..setupCompositingNodes import setup_compositing_nodes
-from ..loadCustomIcons import preview_collections
+from ..icon_manager import icon_manager
 from .utils import (
     adjust_timeline_view, 
     hide_omniscient_collections, 
@@ -252,6 +252,10 @@ class OMNI_PT_VersionWarningPanel(Panel):
 
 
 class OMNI_UL_ShotList(UIList):
+    @classmethod
+    def register(cls):
+        icon_manager.load_custom_icons()
+
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
         shot = item
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
@@ -259,7 +263,7 @@ class OMNI_UL_ShotList(UIList):
             row.prop(shot, "name", text="", emboss=False)
 
             # Custom camera projector icons
-            pcoll = preview_collections["main"]
+            pcoll = icon_manager.preview_collections["main"]
             icon_on = pcoll["icon_cameraProjector_on"].icon_id
             icon_off = pcoll["icon_cameraProjector_off"].icon_id
             icon_value = icon_on if shot.camera_projection_multiply == 1.0 else icon_off
