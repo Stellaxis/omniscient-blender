@@ -263,6 +263,8 @@ class OMNI_UL_ShotList(UIList):
         shot = item
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
+            if bpy.app.version >= (4, 2, 0):
+                row.separator(factor=1)
             row.prop(shot, "name", text="", emboss=False)
 
             # Custom camera projector icons
