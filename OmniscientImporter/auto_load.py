@@ -22,7 +22,8 @@ def init():
     global modules
     global ordered_classes
 
-    modules = get_all_submodules(Path(__file__).parent)
+    addon_dir = Path(__file__).parent
+    modules = get_all_submodules(addon_dir)
     ordered_classes = get_ordered_classes_to_register(modules)
 
 
@@ -53,12 +54,17 @@ def unregister():
 
 
 def get_all_submodules(directory):
-    return list(iter_submodules(directory, directory.name))
+    return list(iter_submodules(directory, __package__))
 
 
 def iter_submodules(path, package_name):
     for name in sorted(iter_submodule_names(path)):
-        yield importlib.import_module("." + name, package_name)
+        full_module_name = package_name + "." + name
+        try:
+            module = import_module_from_path(path / (name.replace('.', '/') + '.py'), full_module_name)
+            yield module
+        except ImportError:
+            pass
 
 
 def iter_submodule_names(path, root=""):
@@ -69,6 +75,14 @@ def iter_submodule_names(path, root=""):
             yield from iter_submodule_names(sub_path, sub_root)
         else:
             yield root + module_name
+
+
+def import_module_from_path(path, full_module_name):
+    spec = importlib.util.spec_from_file_location(full_module_name, str(path))
+    module = importlib.util.module_from_spec(spec)
+    module.__package__ = full_module_name.rpartition('.')[0]
+    spec.loader.exec_module(module)
+    return module
 
 
 # Find classes to register
