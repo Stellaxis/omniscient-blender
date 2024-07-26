@@ -68,7 +68,8 @@ def create_projection_shader(material_name, new_image_name, new_camera):
     # Add drivers for mix rgb colors
     if collection:
         add_driver(mix_rgb_visibility_node,
-                   1, bpy.context.scene,
+                   1,
+                   bpy.context.scene,
                    'SCENE',
                    f"Omni_Collections[{collection_index}].color_scan",
                    False,
