@@ -142,7 +142,7 @@ class OMNI_PT_ImportPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator("load.omni", text="Import .omni")
+        layout.operator("import_scene.omni", text="Import .omni")
 
 
 class OMNI_PT_PreferencesPanel(Panel):
