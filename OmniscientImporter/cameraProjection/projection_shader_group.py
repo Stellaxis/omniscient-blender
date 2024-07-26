@@ -34,17 +34,17 @@ def create_projection_shader_group():
     if is_blender_4():
         node_group.interface.new_socket(name="Vector Input", in_out='INPUT')
         node_group.interface.new_socket(name="Vector Output", in_out='OUTPUT')
-        focal_length_socket = node_group.interface.new_socket(name="Focal Length",
-                                                              in_out='INPUT',
-                                                              socket_type='NodeSocketFloat')
-        sensor_size_socket = node_group.interface.new_socket(name="Sensor Size",
-                                                             in_out='INPUT',
-                                                             socket_type='NodeSocketFloat')
+        node_group.interface.new_socket(name="Focal Length",
+                                        in_out='INPUT',
+                                        socket_type='NodeSocketFloat')
+        node_group.interface.new_socket(name="Sensor Size",
+                                        in_out='INPUT',
+                                        socket_type='NodeSocketFloat')
     else:
         node_group.inputs.new(name="Vector Input", type='NodeSocketVector')
         node_group.outputs.new(name="Vector Output", type='NodeSocketVector')
-        focal_length_socket = node_group.inputs.new(name="Focal Length", type='NodeSocketFloat')
-        sensor_size_socket = node_group.inputs.new(name="Sensor Size", type='NodeSocketFloat')
+        node_group.inputs.new(name="Focal Length", type='NodeSocketFloat')
+        node_group.inputs.new(name="Sensor Size", type='NodeSocketFloat')
 
     separate_xyz_node = create_node_in_group(node_group, "ShaderNodeSeparateXYZ", "Separate XYZ", (-860.0, 100.0))
     combine_xyz_node = create_node_in_group(node_group, "ShaderNodeCombineXYZ", "Combine XYZ", (-40.0, 0.0))
