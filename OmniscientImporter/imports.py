@@ -1,7 +1,7 @@
 import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty
-from bpy.types import Operator, FileHandler
+from bpy.types import Operator
 from .omniHandler import loadOmni
 
 class ImportOmniOperator(Operator, ImportHelper):
@@ -31,26 +31,13 @@ class ImportOmniOperator(Operator, ImportHelper):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
 
-class IMPORT_FH_omni(FileHandler):
-    bl_idname = "IMPORT_FH_omni"
-    bl_label = "Omni File Handler"
-    bl_import_operator = "import_scene.omni"
-    bl_file_extensions = ".omni"
-    exclude_from_auto_register = True
-
-    @classmethod
-    def poll_drop(cls, context):
-        return (context.area and context.area.type == 'VIEW_3D')
-
 def menu_func_import(self, context):
     self.layout.operator(ImportOmniOperator.bl_idname, text="Omniscient (.omni)")
 
 def register():
-    bpy.utils.register_class(ImportOmniOperator)
-    bpy.utils.register_class(IMPORT_FH_omni)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+    bpy.utils.register_class(ImportOmniOperator)
 
 def unregister():
-    bpy.utils.unregister_class(ImportOmniOperator)
-    bpy.utils.unregister_class(IMPORT_FH_omni)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.utils.unregister_class(ImportOmniOperator)
