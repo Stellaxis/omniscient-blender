@@ -141,7 +141,8 @@ def iter_my_classes(modules):
     for cls in get_classes_in_modules(modules):
         if any(base in base_types for base in cls.__bases__):
             if not getattr(cls, "is_registered", False):
-                yield cls
+                if not getattr(cls, "exclude_from_auto_register", False):  # Exclude classes with this attribute
+                    yield cls
 
 
 def get_classes_in_modules(modules):
