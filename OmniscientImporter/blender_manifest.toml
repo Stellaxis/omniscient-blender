@@ -10,7 +10,7 @@ type = "add-on"
 website = "https://omniscient-app.com/"
 
 # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
-tags = ["Import-Export"]
+tags = ["Tracking","Import-Export","Camera","Compositing","Animation","Mesh","Scene"]
 
 blender_version_min = "4.2.0"
 
