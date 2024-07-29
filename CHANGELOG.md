@@ -1,3 +1,15 @@
+# 2.3.0 - (2024.07.29)
+
+### Features
+- Drag & Drop import (Blender 4.2 and newer versions)
+
+### Chore
+- Add blender store manifest
+- Update packaging instructions
+
+### Refactor
+- Conform code to Flake8 (Except C901)
+
 # 2.2.0 - (2024.06.13)
 
 ### Features
