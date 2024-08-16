@@ -1,3 +1,8 @@
+# 2.3.1 - (2024.08.16)
+
+### Fixes
+- Ensured Omniscient scene is visible by default in render
+
 # 2.3.0 - (2024.07.29)
 
 ### Features
