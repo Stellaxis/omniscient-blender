@@ -223,6 +223,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
 
     hide_omniscient_collections(bpy.context.scene)
     omniscient_collection.hide_viewport = False
+    omniscient_collection.hide_render = False
 
     # Trigger the shot switch
     if scene.camera != shot.camera:
