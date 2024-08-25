@@ -32,14 +32,10 @@ def create_projection_shader_group():
                                              is_active_output=True)
 
     if is_blender_4():
-        node_group.interface.new_socket(name="Vector Input", in_out='INPUT')
-        node_group.interface.new_socket(name="Vector Output", in_out='OUTPUT')
-        node_group.interface.new_socket(name="Focal Length",
-                                        in_out='INPUT',
-                                        socket_type='NodeSocketFloat')
-        node_group.interface.new_socket(name="Sensor Size",
-                                        in_out='INPUT',
-                                        socket_type='NodeSocketFloat')
+        node_group.interface.new_socket(name="Vector Input", in_out='INPUT', socket_type='NodeSocketVector')
+        node_group.interface.new_socket(name="Vector Output", in_out='OUTPUT', socket_type='NodeSocketVector')
+        node_group.interface.new_socket(name="Focal Length", in_out='INPUT', socket_type='NodeSocketFloat')
+        node_group.interface.new_socket(name="Sensor Size", in_out='INPUT', socket_type='NodeSocketFloat')
     else:
         node_group.inputs.new(name="Vector Input", type='NodeSocketVector')
         node_group.outputs.new(name="Vector Output", type='NodeSocketVector')
