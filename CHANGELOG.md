@@ -1,3 +1,8 @@
+# 2.3.2 - (2024.08.25)
+
+### Fixes
+- Camera projection when rendering with Cycles
+
 # 2.3.1 - (2024.08.16)
 
 ### Fixes
