@@ -8,7 +8,14 @@ The Omniscient Blender addon is compatible with Blender 3.0 and above.
 
 ## Installation
 
-To install the Omniscient Blender addon, follow these steps:
+To install the Omniscient Blender addon, you have two choices:
+
+### Option 1: Install from Blender Extension Market (Recommended, requires Blender 4.2+)
+
+1. Go to the [Omniscient Importer add-on page](https://extensions.blender.org/add-ons/omniscient/).
+2. Click on the "Get Add-on" button.
+
+### Option 2: Manual Installation
 
 1. Download the latest release from the [releases page](https://github.com/Stellaxis/omniscient-blender/releases).
 2. In Blender, go to Edit > Preferences > Add-ons.
