@@ -1,6 +1,11 @@
+from bpy.app import version as blender_version
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, EnumProperty
 
+if blender_version >= (4, 2, 0):
+    eevee_engine_name = 'BLENDER_EEVEE_NEXT'
+else:
+    eevee_engine_name = 'BLENDER_EEVEE'
 
 class OMNI_Preferences(AddonPreferences):
     bl_idname = __package__
@@ -22,7 +27,7 @@ class OMNI_Preferences(AddonPreferences):
         description="Choose the renderer to set at import",
         items=[
             ('CYCLES', "Cycles (recommended)", "Use Cycles renderer"),
-            ('BLENDER_EEVEE', "Eevee", "Use Eevee renderer"),
+            (eevee_engine_name, "Eevee", "Use Eevee renderer"),
         ],
         default='CYCLES'
     )
