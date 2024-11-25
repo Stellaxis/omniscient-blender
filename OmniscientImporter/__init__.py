@@ -21,7 +21,7 @@ bl_info = {
     "author": "Stellaxis OÜ",
     "description": "Import data recorded by the Omniscient iOS application.",
     "blender": (3, 0, 0),
-    "version": (2, 3, 2),
+    "version": (2, 3, 3),
     "location": "File > Import > Omniscient (.omni)",
     "warning": "",
     "category": "Import-Export"

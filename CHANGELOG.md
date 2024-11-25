@@ -1,3 +1,10 @@
+# 2.3.3 - (2024.11.25)
+
+### Fixes
+- Support for Eevee Next in Blender 4.2+
+- Ensure safe initialization of material
+- Restrict shadow catcher option to Cycles
+
 # 2.3.2 - (2024.08.25)
 
 ### Fixes
