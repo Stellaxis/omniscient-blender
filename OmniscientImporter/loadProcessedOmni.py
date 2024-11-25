@@ -153,6 +153,9 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     shot.collection = omniscient_collection
     shot.use_motion_blur = prefs.enable_motion_blur
 
+    # Initialize material
+    material = None
+
     if imported_cam:
         bpy.context.scene.Camera_Omni = imported_cam
         move_to_collection(imported_cam, omniscient_collection)
