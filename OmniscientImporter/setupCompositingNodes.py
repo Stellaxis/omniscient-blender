@@ -1,7 +1,7 @@
 import bpy
 
 
-def setup_compositing_nodes(image):
+def setup_compositing_nodes(image, renderer):
     scene = bpy.context.scene
 
     # Ensure compositing nodes are enabled
@@ -103,7 +103,9 @@ def setup_compositing_nodes(image):
         links.new(alpha_over_node.outputs['Image'], viewer_node.inputs['Image'])
         links.new(image_node.outputs['Image'], scale_node.inputs['Image'])
         links.new(scale_node.outputs['Image'], mix_node.inputs[1])
-        links.new(render_layers_node.outputs['Shadow Catcher'], mix_node.inputs[2])
+
+        if renderer == 'CYCLES':
+            links.new(render_layers_node.outputs['Shadow Catcher'], mix_node.inputs[2])
 
     # If the image node exists, ensure the scale node is created
     scale_node = nodes.get('Scale')

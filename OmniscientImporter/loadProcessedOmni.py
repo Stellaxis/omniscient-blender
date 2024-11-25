@@ -187,7 +187,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
 
     if imported_mesh:
         bpy.context.scene.Scan_Omni = imported_mesh
-        if prefs.use_shadow_catcher:
+        if prefs.use_shadow_catcher and prefs.renderer == 'CYCLES':
             imported_mesh.is_shadow_catcher = True
             imported_mesh.is_holdout = False  # Ensure holdout is disabled if shadow catcher is enabled
         elif prefs.use_holdout:
@@ -208,7 +208,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     bpy.context.view_layer.cycles.use_pass_shadow_catcher = True
 
     # Set up compositing nodes
-    setup_compositing_nodes(img)
+    setup_compositing_nodes(img, prefs.renderer)
 
     # Save the shutter speed keyframes
     save_camera_settings(shot, camera_settings)

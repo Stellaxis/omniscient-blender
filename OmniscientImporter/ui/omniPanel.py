@@ -165,7 +165,8 @@ class OMNI_PT_PreferencesPanel(Panel):
         # Scene Options Panel
         box = layout.box()
         box.label(text="Scene", icon='SCENE_DATA')
-        box.prop(prefs, "use_shadow_catcher")
+        if prefs.renderer == 'CYCLES':
+            box.prop(prefs, "use_shadow_catcher")
         box.prop(prefs, "use_holdout")
 
         # Renderer Option
@@ -356,8 +357,13 @@ class OMNI_OT_SwitchShot(Operator):
                 if scene.Selected_Collection_Name != shot.collection.name:
                     scene.Selected_Collection_Name = shot.collection.name
 
+            # Determine the current renderer
+            current_renderer = scene.render.engine
+            print(f"Current Renderer: {current_renderer}")
+
             # Update compositing nodes with the correct image
-            setup_compositing_nodes(shot.video)
+            setup_compositing_nodes(shot.video, current_renderer)
+
         return {'FINISHED'}
 
 
