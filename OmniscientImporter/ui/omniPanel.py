@@ -11,7 +11,9 @@ from .utils import (
     update_related_drivers,
     selected_shot_index_update,
     get_selected_collection_and_shot,
-    find_collection_and_shot_index_by_camera
+    find_collection_and_shot_index_by_camera,
+    set_scene_fps,
+    get_scene_fps
 )
 
 # -------------------------------------------------------------------
@@ -126,7 +128,7 @@ def update_render_settings(self, context):
             shot.resolution_y = scene.render.resolution_y
             shot.frame_start = scene.frame_start
             shot.frame_end = scene.frame_end
-            shot.fps = scene.render.fps
+            shot.fps = get_scene_fps(scene)
 
 # -------------------------------------------------------------------
 # Panels
@@ -330,7 +332,7 @@ class OMNI_OT_SwitchShot(Operator):
             scene.camera = shot.camera
             scene.frame_start = shot.frame_start
             scene.frame_end = shot.frame_end
-            scene.render.fps = int(shot.fps)
+            set_scene_fps(scene, shot.fps)
             scene.render.resolution_x = shot.resolution_x
             scene.render.resolution_y = shot.resolution_y
 
@@ -341,7 +343,7 @@ class OMNI_OT_SwitchShot(Operator):
                 clear_motion_blur_keyframes(scene)
                 for keyframe in shot.shutter_speed_keyframes:
                     frame = keyframe.frame
-                    value = keyframe.value * int(shot.fps)
+                    value = keyframe.value * shot.fps
                     scene.render.motion_blur_shutter = value
                     scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame)
 

@@ -90,3 +90,21 @@ def find_collection_and_shot_index_by_camera(camera):
             if shot.camera == camera:
                 return collection, shot, collection_index, shot_index
     return None, None, None, None
+
+
+# FPS utility functions
+def set_scene_fps(scene, fps_value):
+    """Set scene render FPS supporting fractional values."""
+    if fps_value <= 0:
+        return
+    rounded = round(fps_value)
+    if rounded == 0:
+        rounded = 1
+    scene.render.fps = int(rounded)
+    scene.render.fps_base = rounded / fps_value
+
+
+def get_scene_fps(scene):
+    """Return the effective frames per second of the scene."""
+    return scene.render.fps / scene.render.fps_base
+

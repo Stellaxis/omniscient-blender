@@ -1,6 +1,7 @@
 import bpy
 from .cameraProjection.cameraProjectionMaterial import create_projection_shader
 from .setupCompositingNodes import setup_compositing_nodes
+from .ui.utils import set_scene_fps, get_scene_fps
 import os
 
 
@@ -103,7 +104,7 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
     frame_duration = img.frame_duration
     bpy.context.scene.render.resolution_x = width
     bpy.context.scene.render.resolution_y = height
-    bpy.context.scene.render.fps = int(clip_fps)
+    set_scene_fps(bpy.context.scene, clip_fps)
 
     # Setting scene's start and end frames to match the video clip's duration
     bpy.context.scene.frame_start = 1
@@ -324,7 +325,8 @@ def apply_camera_settings(camera, settings):
         camera.data.lens = frame_data['focal_length']
         camera.data.dof.focus_distance = frame_data['focus_distance']
         if 'shutter_speed' in frame_data:
-            shutter_speed_fraction = frame_data['shutter_speed'] * scene.render.fps
+            scene_fps = get_scene_fps(scene)
+            shutter_speed_fraction = frame_data['shutter_speed'] * scene_fps
             scene.render.motion_blur_shutter = shutter_speed_fraction
             scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame_index)
         camera.data.keyframe_insert(data_path="lens", frame=frame_index)
