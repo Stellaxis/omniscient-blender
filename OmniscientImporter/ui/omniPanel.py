@@ -5,12 +5,12 @@ from ..cameraProjection.cameraProjectionMaterial import delete_projection_nodes,
 from ..setupCompositingNodes import setup_compositing_nodes
 from ..icon_manager import icon_manager
 from .utils import (
-    adjust_timeline_view, 
-    hide_omniscient_collections, 
-    clear_motion_blur_keyframes, 
-    update_related_drivers, 
-    selected_shot_index_update, 
-    get_selected_collection_and_shot, 
+    adjust_timeline_view,
+    hide_omniscient_collections,
+    clear_motion_blur_keyframes,
+    update_related_drivers,
+    selected_shot_index_update,
+    get_selected_collection_and_shot,
     find_collection_and_shot_index_by_camera
 )
 
