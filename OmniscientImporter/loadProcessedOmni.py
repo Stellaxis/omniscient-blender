@@ -324,6 +324,20 @@ def apply_camera_settings(camera, settings):
         scene.frame_set(frame_index)  # Set the current frame
         camera.data.lens = frame_data['focal_length']
         camera.data.dof.focus_distance = frame_data['focus_distance']
+        if 'film_offset' in frame_data:
+            offset = frame_data['film_offset']
+            if isinstance(offset, dict):
+                camera.data.shift_x = offset.get('x', camera.data.shift_x)
+                camera.data.shift_y = offset.get('y', camera.data.shift_y)
+            elif isinstance(offset, (list, tuple)):
+                if len(offset) > 0:
+                    camera.data.shift_x = offset[0]
+                if len(offset) > 1:
+                    camera.data.shift_y = offset[1]
+            else:
+                camera.data.shift_y = offset
+            camera.data.keyframe_insert(data_path="shift_x", frame=frame_index)
+            camera.data.keyframe_insert(data_path="shift_y", frame=frame_index)
         if 'shutter_speed' in frame_data:
             scene_fps = get_scene_fps(scene)
             shutter_speed_fraction = frame_data['shutter_speed'] * scene_fps
