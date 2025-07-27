@@ -66,9 +66,9 @@ def get_selected_collection_and_shot(scene, collection_index=None, shot_index=No
     collection_index = collection_index if collection_index is not None else scene.Selected_Collection_Index
     shot_index = shot_index if shot_index is not None else scene.Selected_Shot_Index
 
-    if collection_index < len(scene.Omni_Collections):
+    if 0 <= collection_index < len(scene.Omni_Collections):
         collection = scene.Omni_Collections[collection_index]
-        if shot_index < len(collection.shots):
+        if 0 <= shot_index < len(collection.shots):
             return collection, collection.shots[shot_index]
     return None, None
 

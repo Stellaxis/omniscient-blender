@@ -119,9 +119,9 @@ def update_render_settings(self, context):
     current_collection_index = scene.Selected_Collection_Index
     current_shot_index = scene.Selected_Shot_Index
 
-    if current_collection_index < len(scene.Omni_Collections):
+    if 0 <= current_collection_index < len(scene.Omni_Collections):
         collection = scene.Omni_Collections[current_collection_index]
-        if current_shot_index < len(collection.shots):
+        if 0 <= current_shot_index < len(collection.shots):
             shot = collection.shots[current_shot_index]
             shot.use_motion_blur = scene.render.use_motion_blur
             shot.resolution_x = scene.render.resolution_x
@@ -382,7 +382,7 @@ class OMNI_OT_DeleteShot(Operator):
             scene.Selected_Collection_Index
         shot_index = self.index if self.index is not None else scene.Selected_Shot_Index
 
-        if collection_index < len(scene.Omni_Collections):
+        if 0 <= collection_index < len(scene.Omni_Collections):
             collection = scene.Omni_Collections[collection_index]
             if 0 <= shot_index < len(collection.shots):
                 shot = collection.shots[shot_index]
@@ -395,12 +395,30 @@ class OMNI_OT_DeleteShot(Operator):
                         coll.objects.unlink(shot.camera)
                     bpy.data.objects.remove(shot.camera)
 
+                # Remove mesh if not used by other shots
+                if shot.mesh:
+                    mesh_in_use = False
+                    for coll in scene.Omni_Collections:
+                        for other_shot in coll.shots:
+                            if other_shot != shot and other_shot.mesh == shot.mesh:
+                                mesh_in_use = True
+                                break
+                        if mesh_in_use:
+                            break
+                    if not mesh_in_use:
+                        for coll in shot.mesh.users_collection:
+                            coll.objects.unlink(shot.mesh)
+                        bpy.data.objects.remove(shot.mesh)
+                
                 # Remove the shot
                 collection.shots.remove(shot_index)
 
                 # Adjust the selected index
                 if shot_index == scene.Selected_Shot_Index:
-                    scene.Selected_Shot_Index = min(shot_index, len(collection.shots) - 1)
+                    if collection.shots:
+                        scene.Selected_Shot_Index = min(max(0, shot_index), len(collection.shots) - 1)
+                    else:
+                        scene.Selected_Shot_Index = -1
 
                 return {'FINISHED'}
         return {'CANCELLED'}
