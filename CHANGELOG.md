@@ -1,3 +1,13 @@
+# 2.3.4 - (2025.08.27)
+
+### Fixes
+- Blender 4.5 LTS Compositor compatibility
+- Preserve fractional frame rates when importing shots
+- Reuse loaded videos to avoid duplicate images
+
+### Refactor
+- group set lens and focus
+
 # 2.3.3 - (2024.11.25)
 
 ### Fixes
