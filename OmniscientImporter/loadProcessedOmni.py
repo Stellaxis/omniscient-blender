@@ -322,15 +322,20 @@ def apply_camera_settings(camera, settings):
     scene = bpy.context.scene
     for frame_index, frame_data in enumerate(settings, start=1):
         scene.frame_set(frame_index)  # Set the current frame
-        camera.data.lens = frame_data['focal_length']
-        camera.data.dof.focus_distance = frame_data['focus_distance']
+        set_lens_and_focus(camera.data, frame_data, frame_index)
         if 'shutter_speed' in frame_data:
             scene_fps = get_scene_fps(scene)
             shutter_speed_fraction = frame_data['shutter_speed'] * scene_fps
             scene.render.motion_blur_shutter = shutter_speed_fraction
             scene.render.keyframe_insert(data_path="motion_blur_shutter", frame=frame_index)
-        camera.data.keyframe_insert(data_path="lens", frame=frame_index)
-        camera.data.dof.keyframe_insert(data_path="focus_distance", frame=frame_index)
+
+def set_lens_and_focus(cam_data, frame_data, frame_index):
+    cam_data.lens = frame_data['focal_length']
+    cam_data.dof.focus_distance = frame_data['focus_distance']
+
+    # Insert keyframes for lens and focus distance
+    cam_data.keyframe_insert(data_path="lens", frame=frame_index)
+    cam_data.keyframe_insert(data_path="dof.focus_distance", frame=frame_index)
 
 
 def save_camera_settings(shot, settings):
