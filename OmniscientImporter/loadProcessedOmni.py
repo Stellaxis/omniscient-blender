@@ -94,11 +94,29 @@ def loadProcessedOmni(self, video_filepath, camera_filepath, geo_filepath, camer
         print("Invalid camera FPS value; retiming will not be applied.")
         camera_fps = None
 
-    # Import the .mov file into the blender scene
+    # Import the .mov file into the blender scene without duplicating existing images
     # -- RENDER --
     bpy.context.scene.render.film_transparent = True
-    img = bpy.data.images.load(video_filepath)
-    clip = bpy.data.movieclips.load(video_filepath)  # Load only to get fps
+
+    abs_video_path = bpy.path.abspath(video_filepath)
+
+    # Reuse already loaded image if available
+    img = None
+    for existing in bpy.data.images:
+        if bpy.path.abspath(existing.filepath) == abs_video_path:
+            img = existing
+            break
+    if img is None:
+        img = bpy.data.images.load(video_filepath)
+
+    # Reuse already loaded movieclip if available, otherwise load a new one
+    clip = None
+    for existing in bpy.data.movieclips:
+        if bpy.path.abspath(existing.filepath) == abs_video_path:
+            clip = existing
+            break
+    if clip is None:
+        clip = bpy.data.movieclips.load(video_filepath)  # Load only to get fps
     clip_fps = clip.fps
     width, height = img.size
     frame_duration = img.frame_duration
