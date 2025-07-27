@@ -32,7 +32,6 @@ def setup_compositing_nodes(image, renderer):
         composite_node.use_alpha = True
         composite_node.use_custom_color = False
         composite_node.label = ''
-        composite_node.inputs['Alpha'].default_value = 1.0
 
         render_layers_node = nodes.new(type='CompositorNodeRLayers')
         render_layers_node.name = 'Render Layers'
@@ -52,7 +51,6 @@ def setup_compositing_nodes(image, renderer):
         viewer_node.use_alpha = True
         viewer_node.use_custom_color = False
         viewer_node.label = ''
-        viewer_node.inputs['Alpha'].default_value = 1.0
 
         image_node = nodes.new(type='CompositorNodeImage')
         image_node.name = 'Image'
