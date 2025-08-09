@@ -62,6 +62,20 @@ To check the compliance of your code with Flake8 rules, follow these steps:
     flake8 .
     ```
 
+## Commit messages & Git hooks
+
+This repository enforces Conventional Commits via a shared Git `commit-msg` hook. After cloning, run:
+
+```
+./scripts/setup-hooks.sh
+```
+
+This sets `core.hooksPath` to `.githooks` so Git will run the shared hook for all developers. Example messages:
+
+- feat(auth): add OAuth2 login
+- fix(ui)!: remove deprecated button
+- chore: update dependencies
+
 ## License
 
 The Omniscient Blender addon is licensed under the [GPL License](LICENSE).

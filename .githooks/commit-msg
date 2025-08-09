@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+commit_msg_file="$1"
+first_line="$(head -n1 "$commit_msg_file")"
+
+# Allow merge commits created by Git
+if [[ "$first_line" =~ ^Merge\  ]]; then
+  exit 0
+fi
+
+# Allow default Git revert commits (e.g., "Revert \"feat: ...\"")
+if [[ "$first_line" =~ ^Revert\  ]]; then
+  exit 0
+fi
+
+# Conventional Commits: type(scope)!?: subject
+# Types: build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test
+conventional_regex='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9._-]+\))?(!)?: .+'
+
+if [[ "$first_line" =~ $conventional_regex ]]; then
+  exit 0
+fi
+
+echo "⛔️ Commit message does not follow Conventional Commits." >&2
+echo "   Received: \"$first_line\"" >&2
+echo "   Expected: type(scope)?: subject" >&2
+echo "   Types: build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test" >&2
+echo "   Examples:" >&2
+echo "     feat(auth): add OAuth2 login" >&2
+echo "     fix(ui)!: remove deprecated button" >&2
+echo "     chore: update dependencies" >&2
+exit 1
+
