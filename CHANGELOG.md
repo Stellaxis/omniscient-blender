@@ -1,3 +1,8 @@
+# 2.3.5 - (2025.11.17)
+
+### Fixes
+- Blender 5.0 compatibility
+
 # 2.3.4 - (2025.08.27)
 
 ### Fixes
