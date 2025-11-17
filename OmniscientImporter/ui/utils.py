@@ -10,14 +10,33 @@ def hide_omniscient_collections(scene):
 
 def clear_motion_blur_keyframes(scene):
     # Ensure the scene's animation data exists
-    if scene.animation_data:
-        action = scene.animation_data.action
-        if action:
-            # Find the fcurve for motion_blur_shutter in scene.render and clear its keyframes
-            for fcurve in action.fcurves:
+    anim = scene.animation_data
+    if not anim:
+        return
+
+    action = anim.action
+    if not action:
+        return
+
+    # Blender 5.0+ channelbag API: fcurves live on channelbags
+    channelbags = getattr(action, "channelbags", None)
+    if channelbags is not None:
+        for bag in channelbags:
+            fcurves = getattr(bag, "fcurves", None)
+            if not fcurves:
+                continue
+            # Copy to list so we can safely remove while iterating
+            for fcurve in list(fcurves):
                 if fcurve.data_path == "render.motion_blur_shutter":
-                    action.fcurves.remove(fcurve)
-                    break
+                    fcurves.remove(fcurve)
+                    return
+
+    # Legacy API for Blender 4.x and earlier: fcurves live directly on the Action
+    elif hasattr(action, "fcurves"):
+        for fcurve in list(action.fcurves):
+            if fcurve.data_path == "render.motion_blur_shutter":
+                action.fcurves.remove(fcurve)
+                return
 
 
 def adjust_timeline_view(context, frame_start, frame_end):
@@ -107,4 +126,3 @@ def set_scene_fps(scene, fps_value):
 def get_scene_fps(scene):
     """Return the effective frames per second of the scene."""
     return scene.render.fps / scene.render.fps_base
-
